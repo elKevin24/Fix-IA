@@ -30,7 +30,9 @@ server:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:tesig-secret-key-change-in-production-minimum-256-bits-for-hs256}
+  # IMPORTANTE: Cambiar esta clave en producción. Esta es una clave base64 de 256 bits.
+  # Para generar una nueva: openssl rand -base64 32
+  secret: ${JWT_SECRET:dGVzaWctc2VjdXJlLWtleS1mb3ItZGV2ZWxvcG1lbnQtb25seS1kb25vdC11c2UtaW4tcHJvZHVjdGlvbg==}
   expiration: 86400000 # 24 hours in milliseconds
   refresh-expiration: 604800000 # 7 days in milliseconds
 
