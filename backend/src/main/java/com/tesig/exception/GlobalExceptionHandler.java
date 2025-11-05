@@ -1,6 +1,6 @@
 package com.tesig.exception;
 
-import com.tesig.dto.ApiResponse;
+import com.tesig.dto.common.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,10 @@ import java.util.Map;
 /**
  * Manejador global de excepciones.
  * Captura todas las excepciones y las transforma en respuestas JSON consistentes.
+ *
+ * Aplicación de principios SOLID:
+ * - Single Responsibility: Solo maneja excepciones
+ * - Open/Closed: Fácil agregar nuevos manejadores sin modificar existentes
  */
 @RestControllerAdvice
 @Slf4j
@@ -26,8 +30,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex) {
+        log.warn("Business rule violation: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
