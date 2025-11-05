@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tesig-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tesig_db
+      POSTGRES_USER: tesig_user
+      POSTGRES_PASSWORD: tesig_pass
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=es_MX.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tesig-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tesig_user -d tesig_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgAdmin (opcional - herramienta de administración de BD)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tesig-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tesig.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - tesig-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  tesig-network:
+    driver: bridge
