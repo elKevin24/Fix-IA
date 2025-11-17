@@ -7,6 +7,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tickets", indexes = {
@@ -116,7 +118,47 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "usuario_ingreso_id")
     private Usuario usuarioIngreso;
 
+    /**
+     * Lista de piezas utilizadas en la reparación de este ticket
+     */
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TicketPieza> piezasUtilizadas = new ArrayList<>();
+
     // Métodos de utilidad
+
+    /**
+     * Agrega una pieza utilizada al ticket
+     */
+    public void agregarPieza(TicketPieza ticketPieza) {
+        piezasUtilizadas.add(ticketPieza);
+        ticketPieza.setTicket(this);
+    }
+
+    /**
+     * Remueve una pieza del ticket
+     */
+    public void removerPieza(TicketPieza ticketPieza) {
+        piezasUtilizadas.remove(ticketPieza);
+        ticketPieza.setTicket(null);
+    }
+
+    /**
+     * Calcula el total de las piezas utilizadas
+     */
+    public BigDecimal calcularTotalPiezas() {
+        return piezasUtilizadas.stream()
+                .map(TicketPieza::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Actualiza el presupuesto de piezas basado en las piezas utilizadas
+     */
+    public void actualizarPresupuestoPiezas() {
+        this.presupuestoPiezas = calcularTotalPiezas();
+    }
+
     public void calcularPresupuestoTotal() {
         BigDecimal manoObra = presupuestoManoObra != null ? presupuestoManoObra : BigDecimal.ZERO;
         BigDecimal piezas = presupuestoPiezas != null ? presupuestoPiezas : BigDecimal.ZERO;

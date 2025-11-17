@@ -5,7 +5,10 @@ import com.tesig.dto.common.PaginatedResponseDTO;
 import com.tesig.dto.ticket.*;
 import com.tesig.model.Ticket;
 import com.tesig.repository.TicketRepository;
+import com.tesig.dto.AgregarPiezaTicketDTO;
+import com.tesig.dto.TicketPiezaResponseDTO;
 import com.tesig.service.IPDFService;
+import com.tesig.service.ITicketPiezaService;
 import com.tesig.service.ITicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -51,6 +54,7 @@ public class TicketController {
     private final ITicketService ticketService;
     private final IPDFService pdfService;
     private final TicketRepository ticketRepository;
+    private final ITicketPiezaService ticketPiezaService;
 
     // ==================== CONSULTAS ====================
 
@@ -381,5 +385,86 @@ public class TicketController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(pdfBytes);
+    }
+
+    // ==================== GESTIÓN DE PIEZAS ====================
+
+    @PostMapping("/{id}/piezas")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Agregar pieza a ticket",
+            description = "Agrega una pieza al ticket y actualiza el presupuesto. " +
+                         "Valida stock disponible y descuenta automáticamente."
+    )
+    public ResponseEntity<ApiResponse<TicketPiezaResponseDTO>> agregarPieza(
+            @PathVariable Long id,
+            @Valid @RequestBody AgregarPiezaTicketDTO dto
+    ) {
+        log.info("POST /api/tickets/{}/piezas - Agregando pieza al ticket", id);
+
+        TicketPiezaResponseDTO ticketPieza = ticketPiezaService.agregarPiezaATicket(id, dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(ticketPieza, "Pieza agregada al ticket exitosamente"));
+    }
+
+    @GetMapping("/{id}/piezas")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Listar piezas del ticket",
+            description = "Obtiene todas las piezas asociadas a un ticket"
+    )
+    public ResponseEntity<ApiResponse<List<TicketPiezaResponseDTO>>> listarPiezasDeTicket(
+            @PathVariable Long id
+    ) {
+        log.info("GET /api/tickets/{}/piezas - Listando piezas del ticket", id);
+
+        List<TicketPiezaResponseDTO> piezas = ticketPiezaService.obtenerPiezasDeTicket(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(piezas, "Piezas del ticket obtenidas exitosamente")
+        );
+    }
+
+    @DeleteMapping("/{ticketId}/piezas/{ticketPiezaId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Remover pieza del ticket",
+            description = "Elimina una pieza del ticket y reintegra el stock si fue descontado"
+    )
+    public ResponseEntity<ApiResponse<Void>> removerPieza(
+            @PathVariable Long ticketId,
+            @PathVariable Long ticketPiezaId
+    ) {
+        log.info("DELETE /api/tickets/{}/piezas/{} - Removiendo pieza del ticket",
+                 ticketId, ticketPiezaId);
+
+        ticketPiezaService.removerPiezaDeTicket(ticketPiezaId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(null, "Pieza removida del ticket exitosamente")
+        );
+    }
+
+    @PutMapping("/{ticketId}/piezas/{ticketPiezaId}/cantidad")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Actualizar cantidad de pieza en ticket",
+            description = "Modifica la cantidad de una pieza en el ticket y ajusta el stock"
+    )
+    public ResponseEntity<ApiResponse<TicketPiezaResponseDTO>> actualizarCantidadPieza(
+            @PathVariable Long ticketId,
+            @PathVariable Long ticketPiezaId,
+            @RequestParam Integer cantidad
+    ) {
+        log.info("PUT /api/tickets/{}/piezas/{}/cantidad - Actualizando cantidad a {}",
+                 ticketId, ticketPiezaId, cantidad);
+
+        TicketPiezaResponseDTO ticketPieza =
+                ticketPiezaService.actualizarCantidad(ticketPiezaId, cantidad);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(ticketPieza, "Cantidad actualizada exitosamente")
+        );
     }
 }

@@ -147,9 +147,43 @@ public class PDFServiceImpl implements IPDFService {
                 document.add(diagnostico);
             }
 
+            // Detalle de piezas (si hay piezas utilizadas)
+            if (ticket.getPiezasUtilizadas() != null && !ticket.getPiezasUtilizadas().isEmpty()) {
+                Paragraph piezasTitulo = new Paragraph("DETALLE DE PIEZAS Y REPUESTOS")
+                        .setFontSize(14)
+                        .setBold()
+                        .setFontColor(COLOR_PRIMARY)
+                        .setMarginTop(15)
+                        .setMarginBottom(10);
+                document.add(piezasTitulo);
+
+                Table piezasTable = new Table(UnitValue.createPercentArray(new float[]{3, 1, 1, 1.5f}))
+                        .useAllAvailableWidth();
+
+                // Encabezados
+                piezasTable.addHeaderCell(createCell("Pieza", true));
+                piezasTable.addHeaderCell(createCell("Cant.", true));
+                piezasTable.addHeaderCell(createCell("Precio Unit.", true));
+                piezasTable.addHeaderCell(createCell("Subtotal", true));
+
+                // Filas de piezas
+                for (var ticketPieza : ticket.getPiezasUtilizadas()) {
+                    piezasTable.addCell(createCell(
+                            ticketPieza.getPieza().getNombre() +
+                            "\n" + ticketPieza.getPieza().getCodigo(),
+                            false
+                    ));
+                    piezasTable.addCell(createCell(String.valueOf(ticketPieza.getCantidad()), false));
+                    piezasTable.addCell(createCell(formatCurrency(ticketPieza.getPrecioUnitario()), false));
+                    piezasTable.addCell(createCell(formatCurrency(ticketPieza.getSubtotal()), false));
+                }
+
+                document.add(piezasTable);
+            }
+
             // Presupuesto
             if (ticket.getPresupuestoTotal() != null) {
-                Paragraph presTitulo = new Paragraph("PRESUPUESTO")
+                Paragraph presTitulo = new Paragraph("RESUMEN DEL PRESUPUESTO")
                         .setFontSize(14)
                         .setBold()
                         .setFontColor(COLOR_PRIMARY)

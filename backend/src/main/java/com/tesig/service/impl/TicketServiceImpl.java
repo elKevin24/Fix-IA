@@ -10,6 +10,7 @@ import com.tesig.repository.ClienteRepository;
 import com.tesig.repository.TicketRepository;
 import com.tesig.repository.UsuarioRepository;
 import com.tesig.service.IEmailService;
+import com.tesig.service.ITicketPiezaService;
 import com.tesig.service.ITicketService;
 import com.tesig.util.NumeroTicketGenerator;
 import com.tesig.util.TicketEstadoValidator;
@@ -55,6 +56,7 @@ public class TicketServiceImpl implements ITicketService {
     private final NumeroTicketGenerator numeroTicketGenerator;
     private final TicketEstadoValidator estadoValidator;
     private final IEmailService emailService;
+    private final ITicketPiezaService ticketPiezaService;
 
     // ==================== CONSULTAS ====================
 
@@ -386,6 +388,15 @@ public class TicketServiceImpl implements ITicketService {
         // Cambiar estado
         cambiarEstado(ticket, EstadoTicket.APROBADO);
 
+        // Descontar piezas del inventario
+        try {
+            ticketPiezaService.descontarPiezasDelInventario(id);
+            log.info("Piezas descontadas del inventario para ticket {}", ticket.getNumeroTicket());
+        } catch (Exception e) {
+            log.error("Error al descontar piezas del inventario", e);
+            throw new BusinessException("Error al descontar piezas del inventario: " + e.getMessage());
+        }
+
         ticket = ticketRepository.save(ticket);
 
         log.info("Presupuesto aprobado para ticket {}", ticket.getNumeroTicket());
@@ -410,6 +421,15 @@ public class TicketServiceImpl implements ITicketService {
         // Registrar motivo y cambiar estado
         ticket.setMotivoRechazo(rechazarDTO.getMotivoRechazo());
         cambiarEstado(ticket, EstadoTicket.RECHAZADO);
+
+        // Reintegrar piezas al inventario si fueron descontadas
+        try {
+            ticketPiezaService.reintegrarPiezasAlInventario(id);
+            log.info("Piezas reintegradas al inventario para ticket {}", ticket.getNumeroTicket());
+        } catch (Exception e) {
+            log.error("Error al reintegrar piezas al inventario", e);
+            // No lanzar excepción, solo logear el error
+        }
 
         ticket = ticketRepository.save(ticket);
 
@@ -600,6 +620,15 @@ public class TicketServiceImpl implements ITicketService {
         // Registrar motivo y cambiar estado (ESTADO FINAL)
         ticket.setMotivoCancelacion(cancelarDTO.getMotivoCancelacion());
         cambiarEstado(ticket, EstadoTicket.CANCELADO);
+
+        // Reintegrar piezas al inventario si fueron descontadas
+        try {
+            ticketPiezaService.reintegrarPiezasAlInventario(id);
+            log.info("Piezas reintegradas al inventario para ticket cancelado {}", ticket.getNumeroTicket());
+        } catch (Exception e) {
+            log.error("Error al reintegrar piezas al inventario para ticket cancelado", e);
+            // No lanzar excepción, solo logear el error
+        }
 
         ticket = ticketRepository.save(ticket);
 
