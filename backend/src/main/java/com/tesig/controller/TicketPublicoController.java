@@ -2,6 +2,9 @@ package com.tesig.controller;
 
 import com.tesig.dto.ApiResponse;
 import com.tesig.dto.TicketConsultaPublicaDTO;
+import com.tesig.model.Ticket;
+import com.tesig.repository.TicketRepository;
+import com.tesig.service.IPDFService;
 import com.tesig.service.ITicketPublicoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +36,8 @@ import org.springframework.web.bind.annotation.*;
 public class TicketPublicoController {
 
     private final ITicketPublicoService ticketPublicoService;
+    private final IPDFService pdfService;
+    private final TicketRepository ticketRepository;
 
     @Operation(
         summary = "Consultar estado de ticket",
@@ -82,5 +89,33 @@ public class TicketPublicoController {
                         existe
                 )
         );
+    }
+
+    @Operation(
+        summary = "Descargar ticket en PDF",
+        description = "Genera y descarga el ticket en formato PDF con código QR. " +
+                     "No requiere autenticación. El cliente puede descargar su ticket " +
+                     "para tenerlo impreso."
+    )
+    @GetMapping("/{numeroTicket}/pdf")
+    public ResponseEntity<byte[]> descargarTicketPDF(
+            @Parameter(description = "Número único del ticket", example = "TKT-2024-00001")
+            @PathVariable String numeroTicket
+    ) {
+        log.info("GET /publico/tickets/{}/pdf - Descargando PDF público", numeroTicket);
+
+        Ticket ticket = ticketRepository.findByNumeroTicketAndDeletedAtIsNull(numeroTicket)
+                .orElseThrow(() -> new RuntimeException("Ticket no encontrado: " + numeroTicket));
+
+        byte[] pdfBytes = pdfService.generarTicketPDF(ticket);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Ticket-" + numeroTicket + ".pdf");
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
     }
 }

@@ -3,6 +3,9 @@ package com.tesig.controller;
 import com.tesig.dto.common.ApiResponse;
 import com.tesig.dto.common.PaginatedResponseDTO;
 import com.tesig.dto.ticket.*;
+import com.tesig.model.Ticket;
+import com.tesig.repository.TicketRepository;
+import com.tesig.service.IPDFService;
 import com.tesig.service.ITicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -13,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +49,8 @@ import java.util.List;
 public class TicketController {
 
     private final ITicketService ticketService;
+    private final IPDFService pdfService;
+    private final TicketRepository ticketRepository;
 
     // ==================== CONSULTAS ====================
 
@@ -324,5 +331,55 @@ public class TicketController {
         log.info("GET /api/tickets/{}/puede-transicionar/{} - Validando transición", id, estadoNuevo);
         boolean puede = ticketService.puedeTransicionarA(id, estadoNuevo);
         return ResponseEntity.ok(ApiResponse.success(puede, "Validación completada"));
+    }
+
+    // ==================== GENERACIÓN DE DOCUMENTOS ====================
+
+    @GetMapping("/{id}/pdf")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA')")
+    @Operation(
+            summary = "Descargar ticket en PDF",
+            description = "Genera y descarga el ticket en formato PDF con código QR para consulta"
+    )
+    public ResponseEntity<byte[]> descargarTicketPDF(@PathVariable Long id) {
+        log.info("GET /api/tickets/{}/pdf - Generando PDF del ticket", id);
+
+        Ticket ticket = ticketRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("Ticket no encontrado con ID: " + id));
+
+        byte[] pdfBytes = pdfService.generarTicketPDF(ticket);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Ticket-" + ticket.getNumeroTicket() + ".pdf");
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
+
+    @GetMapping("/{id}/presupuesto-pdf")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Descargar presupuesto en PDF",
+            description = "Genera y descarga el presupuesto del ticket en formato PDF"
+    )
+    public ResponseEntity<byte[]> descargarPresupuestoPDF(@PathVariable Long id) {
+        log.info("GET /api/tickets/{}/presupuesto-pdf - Generando PDF del presupuesto", id);
+
+        Ticket ticket = ticketRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("Ticket no encontrado con ID: " + id));
+
+        byte[] pdfBytes = pdfService.generarPresupuestoPDF(ticket);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Presupuesto-" + ticket.getNumeroTicket() + ".pdf");
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
     }
 }
