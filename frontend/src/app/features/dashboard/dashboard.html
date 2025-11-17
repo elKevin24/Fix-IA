@@ -1,0 +1,87 @@
+<div class="dashboard-container">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <i class="fas fa-tools me-2"></i>
+        TESIG
+      </a>
+      <div class="navbar-nav ms-auto">
+        @if (currentUser) {
+          <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user-circle me-1"></i>
+              {{ currentUser.nombre }} {{ currentUser.apellido }}
+              <span class="badge bg-secondary ms-2">{{ currentUser.rol }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Mi Perfil</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" (click)="logout()" style="cursor: pointer">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+              </a></li>
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid mt-4">
+    <h2 class="mb-4">Dashboard</h2>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Bienvenido al Sistema TESIG</h5>
+            <p class="card-text">
+              Sistema Integral de Gestión para Taller Electrónico.
+            </p>
+            <p class="text-muted">
+              Rol actual: <strong>{{ currentUser?.rol }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      @if (currentUser?.rol === Rol.ADMINISTRADOR || currentUser?.rol === Rol.RECEPCIONISTA) {
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body text-center">
+              <i class="fas fa-users fa-3x text-primary mb-3"></i>
+              <h5>Clientes</h5>
+              <p class="text-muted">Gestión de clientes</p>
+              <a href="#" class="btn btn-primary btn-sm">Acceder</a>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <i class="fas fa-ticket-alt fa-3x text-success mb-3"></i>
+            <h5>Tickets</h5>
+            <p class="text-muted">Gestión de reparaciones</p>
+            <a href="#" class="btn btn-success btn-sm">Acceder</a>
+          </div>
+        </div>
+      </div>
+
+      @if (currentUser?.rol === Rol.ADMINISTRADOR || currentUser?.rol === Rol.RECEPCIONISTA) {
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body text-center">
+              <i class="fas fa-boxes fa-3x text-warning mb-3"></i>
+              <h5>Inventario</h5>
+              <p class="text-muted">Gestión de piezas</p>
+              <a href="#" class="btn btn-warning btn-sm">Acceder</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
