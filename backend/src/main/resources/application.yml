@@ -23,6 +23,34 @@ spring:
       mode: always
       platform: postgresql
 
+  # Email Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    # Email del taller (remitente)
+    from: ${MAIL_FROM:taller@tesig.com}
+    from-name: ${MAIL_FROM_NAME:Taller TESIG}
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
 server:
   port: 8080
   servlet:
@@ -45,6 +73,18 @@ springdoc:
     enabled: true
     tags-sorter: alpha
     operations-sorter: alpha
+
+# Configuración personalizada de la aplicación
+tesig:
+  app:
+    name: TESIG - Taller Electrónico
+    public-url: ${PUBLIC_URL:http://localhost:3000}
+    ticket-consultation-path: /consulta
+  notifications:
+    email:
+      enabled: ${NOTIFICATIONS_EMAIL_ENABLED:true}
+    sms:
+      enabled: ${NOTIFICATIONS_SMS_ENABLED:false}
 
 # Logging
 logging:

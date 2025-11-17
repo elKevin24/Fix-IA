@@ -9,6 +9,7 @@ import com.tesig.model.*;
 import com.tesig.repository.ClienteRepository;
 import com.tesig.repository.TicketRepository;
 import com.tesig.repository.UsuarioRepository;
+import com.tesig.service.IEmailService;
 import com.tesig.service.ITicketService;
 import com.tesig.util.NumeroTicketGenerator;
 import com.tesig.util.TicketEstadoValidator;
@@ -53,6 +54,7 @@ public class TicketServiceImpl implements ITicketService {
     private final TicketMapper ticketMapper;
     private final NumeroTicketGenerator numeroTicketGenerator;
     private final TicketEstadoValidator estadoValidator;
+    private final IEmailService emailService;
 
     // ==================== CONSULTAS ====================
 
@@ -272,6 +274,15 @@ public class TicketServiceImpl implements ITicketService {
         ticket = ticketRepository.save(ticket);
 
         log.info("Ticket creado exitosamente: {}", numeroTicket);
+
+        // Enviar notificación por email
+        try {
+            emailService.enviarEmailTicketCreado(ticket);
+        } catch (Exception e) {
+            log.error("Error al enviar email de ticket creado, pero el ticket fue creado exitosamente", e);
+            // No fallar la operación si el email falla
+        }
+
         return ticketMapper.toDTO(ticket);
     }
 
@@ -345,6 +356,15 @@ public class TicketServiceImpl implements ITicketService {
         ticket = ticketRepository.save(ticket);
 
         log.info("Diagnóstico registrado para ticket {}", ticket.getNumeroTicket());
+
+        // Enviar notificación de presupuesto disponible
+        try {
+            emailService.enviarEmailPresupuestoDisponible(ticket);
+        } catch (Exception e) {
+            log.error("Error al enviar email de presupuesto disponible, pero el diagnóstico fue registrado", e);
+            // No fallar la operación si el email falla
+        }
+
         return ticketMapper.toDTO(ticket);
     }
 
@@ -496,6 +516,16 @@ public class TicketServiceImpl implements ITicketService {
 
         ticket = ticketRepository.save(ticket);
 
+        // Si las pruebas fueron exitosas, enviar notificación
+        if (Boolean.TRUE.equals(pruebasDTO.getExitoso())) {
+            try {
+                emailService.enviarEmailListoParaEntrega(ticket);
+            } catch (Exception e) {
+                log.error("Error al enviar email de listo para entrega tras pruebas exitosas", e);
+                // No fallar la operación si el email falla
+            }
+        }
+
         return ticketMapper.toDTO(ticket);
     }
 
@@ -515,6 +545,15 @@ public class TicketServiceImpl implements ITicketService {
         ticket = ticketRepository.save(ticket);
 
         log.info("Ticket {} marcado como listo para entrega", ticket.getNumeroTicket());
+
+        // Enviar notificación de listo para entrega
+        try {
+            emailService.enviarEmailListoParaEntrega(ticket);
+        } catch (Exception e) {
+            log.error("Error al enviar email de listo para entrega, pero el estado fue actualizado", e);
+            // No fallar la operación si el email falla
+        }
+
         return ticketMapper.toDTO(ticket);
     }
 
