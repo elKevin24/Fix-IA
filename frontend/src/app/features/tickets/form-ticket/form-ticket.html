@@ -1,0 +1,319 @@
+<div class="form-container">
+  <!-- Header -->
+  <div class="form-header">
+    <div class="container">
+      <h1>
+        <i class="fas fa-ticket-alt"></i>
+        Crear Nuevo Ticket
+      </h1>
+      <p>Registra el ingreso de un equipo para reparación</p>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <!-- Success Message -->
+        <div class="alert alert-success" *ngIf="successMessage">
+          <i class="fas fa-check-circle"></i>
+          {{ successMessage }}
+        </div>
+
+        <!-- Error Message -->
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage }}
+        </div>
+
+        <div class="card form-card">
+          <div class="card-body">
+            <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+              <!-- Sección: Información del Cliente -->
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="fas fa-user"></i>
+                  Información del Cliente
+                </h5>
+
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-4">
+                      <label for="clienteId" class="form-label">
+                        Cliente
+                        <span class="text-danger">*</span>
+                      </label>
+                      <select
+                        class="form-select"
+                        id="clienteId"
+                        formControlName="clienteId"
+                        [class.is-invalid]="clienteId?.invalid && clienteId?.touched"
+                        [class.is-valid]="clienteId?.valid && clienteId?.touched"
+                      >
+                        <option value="" disabled selected>Selecciona un cliente</option>
+                        <option *ngFor="let cliente of clientes" [value]="cliente.id">
+                          {{ cliente.nombre }} - {{ cliente.telefono }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback" *ngIf="clienteId?.invalid && clienteId?.touched">
+                        {{ getErrorMessage('clienteId') }}
+                      </div>
+                      <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Si el cliente no aparece, créalo primero en
+                        <a routerLink="/clientes/nuevo" target="_blank">Gestión de Clientes</a>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="section-divider">
+
+              <!-- Sección: Información del Equipo -->
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="fas fa-laptop"></i>
+                  Información del Equipo
+                </h5>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-4">
+                      <label for="tipoEquipo" class="form-label">
+                        Tipo de Equipo
+                        <span class="text-danger">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="tipoEquipo"
+                        formControlName="tipoEquipo"
+                        placeholder="Ej: Laptop, PC de escritorio, Impresora"
+                        [class.is-invalid]="tipoEquipo?.invalid && tipoEquipo?.touched"
+                        [class.is-valid]="tipoEquipo?.valid && tipoEquipo?.touched"
+                      />
+                      <div class="invalid-feedback" *ngIf="tipoEquipo?.invalid && tipoEquipo?.touched">
+                        {{ getErrorMessage('tipoEquipo') }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="mb-4">
+                      <label for="marca" class="form-label">
+                        Marca
+                      </label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="marca"
+                        formControlName="marca"
+                        placeholder="Ej: Dell, HP, Lenovo"
+                        [class.is-invalid]="marca?.invalid && marca?.touched"
+                        [class.is-valid]="marca?.valid && marca?.touched"
+                      />
+                      <div class="invalid-feedback" *ngIf="marca?.invalid && marca?.touched">
+                        {{ getErrorMessage('marca') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-4">
+                      <label for="modelo" class="form-label">
+                        Modelo
+                      </label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="modelo"
+                        formControlName="modelo"
+                        placeholder="Ej: Latitude 5420, Pavilion 15"
+                        [class.is-invalid]="modelo?.invalid && modelo?.touched"
+                        [class.is-valid]="modelo?.valid && modelo?.touched"
+                      />
+                      <div class="invalid-feedback" *ngIf="modelo?.invalid && modelo?.touched">
+                        {{ getErrorMessage('modelo') }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="mb-4">
+                      <label for="numeroSerie" class="form-label">
+                        Número de Serie
+                      </label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="numeroSerie"
+                        formControlName="numeroSerie"
+                        placeholder="Ej: SN123456789"
+                        [class.is-invalid]="numeroSerie?.invalid && numeroSerie?.touched"
+                        [class.is-valid]="numeroSerie?.valid && numeroSerie?.touched"
+                      />
+                      <div class="invalid-feedback" *ngIf="numeroSerie?.invalid && numeroSerie?.touched">
+                        {{ getErrorMessage('numeroSerie') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-4">
+                      <label for="accesorios" class="form-label">
+                        Accesorios Incluidos
+                      </label>
+                      <textarea
+                        class="form-control"
+                        id="accesorios"
+                        formControlName="accesorios"
+                        rows="2"
+                        placeholder="Ej: Cargador, mouse inalámbrico, estuche"
+                        [class.is-invalid]="accesorios?.invalid && accesorios?.touched"
+                        [class.is-valid]="accesorios?.valid && accesorios?.touched"
+                      ></textarea>
+                      <div class="invalid-feedback" *ngIf="accesorios?.invalid && accesorios?.touched">
+                        {{ getErrorMessage('accesorios') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="section-divider">
+
+              <!-- Sección: Problema y Prioridad -->
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Problema Reportado
+                </h5>
+
+                <div class="row">
+                  <div class="col-12">
+                    <div class="mb-4">
+                      <label for="problemaReportado" class="form-label">
+                        Descripción del Problema
+                        <span class="text-danger">*</span>
+                      </label>
+                      <textarea
+                        class="form-control"
+                        id="problemaReportado"
+                        formControlName="problemaReportado"
+                        rows="4"
+                        placeholder="Describe detalladamente el problema que presenta el equipo..."
+                        [class.is-invalid]="problemaReportado?.invalid && problemaReportado?.touched"
+                        [class.is-valid]="problemaReportado?.valid && problemaReportado?.touched"
+                      ></textarea>
+                      <div class="invalid-feedback" *ngIf="problemaReportado?.invalid && problemaReportado?.touched">
+                        {{ getErrorMessage('problemaReportado') }}
+                      </div>
+                      <small class="form-text text-muted">
+                        Mínimo 10 caracteres
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-4">
+                      <label for="prioridad" class="form-label">
+                        Prioridad
+                        <span class="text-danger">*</span>
+                      </label>
+                      <select
+                        class="form-select"
+                        id="prioridad"
+                        formControlName="prioridad"
+                        [class.is-invalid]="prioridad?.invalid && prioridad?.touched"
+                        [class.is-valid]="prioridad?.valid && prioridad?.touched"
+                      >
+                        <option *ngFor="let p of prioridades" [value]="p">
+                          {{ p }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback" *ngIf="prioridad?.invalid && prioridad?.touched">
+                        {{ getErrorMessage('prioridad') }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="mb-4">
+                      <label for="observaciones" class="form-label">
+                        Observaciones Adicionales
+                      </label>
+                      <textarea
+                        class="form-control"
+                        id="observaciones"
+                        formControlName="observaciones"
+                        rows="3"
+                        placeholder="Cualquier información adicional relevante..."
+                        [class.is-invalid]="observaciones?.invalid && observaciones?.touched"
+                        [class.is-valid]="observaciones?.valid && observaciones?.touched"
+                      ></textarea>
+                      <div class="invalid-feedback" *ngIf="observaciones?.invalid && observaciones?.touched">
+                        {{ getErrorMessage('observaciones') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="section-divider">
+
+              <!-- Botones de acción -->
+              <div class="d-flex justify-content-between align-items-center">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-lg"
+                  (click)="onCancel()"
+                  [disabled]="isSaving"
+                >
+                  <i class="fas fa-times"></i>
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-lg"
+                  [disabled]="isSaving || ticketForm.invalid"
+                >
+                  <span *ngIf="!isSaving">
+                    <i class="fas fa-plus"></i>
+                    Crear Ticket
+                  </span>
+                  <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Creando...
+                  </span>
+                </button>
+              </div>
+
+              <!-- Información de campos requeridos -->
+              <div class="mt-3">
+                <small class="text-muted">
+                  <span class="text-danger">*</span> Campos requeridos
+                </small>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Botón de regreso -->
+        <div class="text-center mt-4">
+          <a routerLink="/tickets" class="text-decoration-none">
+            <i class="fas fa-arrow-left"></i>
+            Volver a la lista de tickets
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

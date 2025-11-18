@@ -1,0 +1,148 @@
+<div class="form-container">
+  <div class="form-header">
+    <div class="container">
+      <h1>
+        <i class="fas" [class.fa-box]="!isEditMode" [class.fa-edit]="isEditMode"></i>
+        {{ isEditMode ? 'Editar Pieza' : 'Nueva Pieza' }}
+      </h1>
+      <p>{{ isEditMode ? 'Actualiza la información de la pieza' : 'Agrega una nueva pieza al inventario' }}</p>
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    <div class="row justify-content-center" *ngIf="!isLoading">
+      <div class="col-lg-8">
+        <div class="alert alert-success" *ngIf="successMessage">
+          <i class="fas fa-check-circle"></i>
+          {{ successMessage }}
+        </div>
+
+        <div class="alert alert-danger" *ngIf="errorMessage">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage }}
+        </div>
+
+        <div class="card form-card">
+          <div class="card-body">
+            <form [formGroup]="piezaForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label class="form-label">Código <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="codigo"
+                    [class.is-invalid]="codigo?.invalid && codigo?.touched"
+                    [class.is-valid]="codigo?.valid && codigo?.touched">
+                  <div class="invalid-feedback" *ngIf="codigo?.invalid && codigo?.touched">
+                    {{ getErrorMessage('codigo') }}
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                  <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="nombre"
+                    [class.is-invalid]="nombre?.invalid && nombre?.touched"
+                    [class.is-valid]="nombre?.valid && nombre?.touched">
+                  <div class="invalid-feedback" *ngIf="nombre?.invalid && nombre?.touched">
+                    {{ getErrorMessage('nombre') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Descripción</label>
+                <textarea class="form-control" formControlName="descripcion" rows="2"
+                  [class.is-invalid]="descripcion?.invalid && descripcion?.touched"
+                  [class.is-valid]="descripcion?.valid && descripcion?.touched"></textarea>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="categoria" list="categorias"
+                  [class.is-invalid]="categoria?.invalid && categoria?.touched"
+                  [class.is-valid]="categoria?.valid && categoria?.touched">
+                <datalist id="categorias">
+                  <option *ngFor="let cat of categorias" [value]="cat">
+                </datalist>
+                <div class="invalid-feedback" *ngIf="categoria?.invalid && categoria?.touched">
+                  {{ getErrorMessage('categoria') }}
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label class="form-label">Precio Costo ($) <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="precioCosto" step="0.01"
+                    [class.is-invalid]="precioCosto?.invalid && precioCosto?.touched"
+                    [class.is-valid]="precioCosto?.valid && precioCosto?.touched">
+                  <div class="invalid-feedback" *ngIf="precioCosto?.invalid && precioCosto?.touched">
+                    {{ getErrorMessage('precioCosto') }}
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                  <label class="form-label">Precio Venta ($) <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="precioVenta" step="0.01"
+                    [class.is-invalid]="precioVenta?.invalid && precioVenta?.touched"
+                    [class.is-valid]="precioVenta?.valid && precioVenta?.touched">
+                  <div class="invalid-feedback" *ngIf="precioVenta?.invalid && precioVenta?.touched">
+                    {{ getErrorMessage('precioVenta') }}
+                  </div>
+                  <small class="text-muted">Margen: {{ calculateMargin() }}</small>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label class="form-label">Stock Actual <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="stock"
+                    [class.is-invalid]="stock?.invalid && stock?.touched"
+                    [class.is-valid]="stock?.valid && stock?.touched">
+                  <div class="invalid-feedback" *ngIf="stock?.invalid && stock?.touched">
+                    {{ getErrorMessage('stock') }}
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                  <label class="form-label">Stock Mínimo <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="stockMinimo"
+                    [class.is-invalid]="stockMinimo?.invalid && stockMinimo?.touched"
+                    [class.is-valid]="stockMinimo?.valid && stockMinimo?.touched">
+                  <div class="invalid-feedback" *ngIf="stockMinimo?.invalid && stockMinimo?.touched">
+                    {{ getErrorMessage('stockMinimo') }}
+                  </div>
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-lg" (click)="onCancel()" [disabled]="isSaving">
+                  <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary btn-lg" [disabled]="isSaving || piezaForm.invalid">
+                  <span *ngIf="!isSaving">
+                    <i class="fas" [class.fa-save]="isEditMode" [class.fa-plus]="!isEditMode"></i>
+                    {{ isEditMode ? 'Actualizar' : 'Crear' }} Pieza
+                  </span>
+                  <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Guardando...
+                  </span>
+                </button>
+              </div>
+
+              <div class="mt-3">
+                <small class="text-muted"><span class="text-danger">*</span> Campos requeridos</small>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <a routerLink="/inventario"><i class="fas fa-arrow-left"></i> Volver al inventario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
