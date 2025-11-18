@@ -2,6 +2,82 @@
 -- Este script se ejecuta automáticamente al iniciar la aplicación
 
 -- =============================================================================
+-- CONFIGURACIÓN DE LA EMPRESA
+-- =============================================================================
+
+INSERT INTO configuracion_empresa (
+    nombre_empresa, razon_social, identificacion_fiscal, codigo_empresa, codigo_sucursal,
+    nombre_sucursal, direccion, ciudad, provincia, codigo_postal, pais,
+    telefono_principal, telefono_secundario, email_contacto, email_soporte, sitio_web,
+    horario_atencion, dias_laborales, prefijo_ticket, longitud_secuencia,
+    dias_garantia_default, porcentaje_impuesto, moneda,
+    mensaje_bienvenida, terminos_condiciones, mensaje_agradecimiento,
+    facebook_url, instagram_url, whatsapp, activo, created_at, updated_at
+)
+VALUES (
+    'TESIG - Taller Electrónico',
+    'TESIG Servicios Tecnológicos S.A.',
+    '1792345678001',
+    'TES',
+    'MAT',
+    'Matriz Principal',
+    'Av. Principal 123, Edificio Tech Center',
+    'Quito',
+    'Pichincha',
+    '170150',
+    'Ecuador',
+    '+593 2 123 4567',
+    '+593 99 123 4567',
+    'contacto@tesig.com',
+    'soporte@tesig.com',
+    'https://www.tesig.com',
+    'Lunes a Viernes: 9:00 - 18:00, Sábados: 9:00 - 13:00',
+    'Lunes a Sábado',
+    NULL,
+    4,
+    30,
+    12.0,
+    'USD',
+    'Bienvenido a TESIG. Su equipo está en las mejores manos.',
+    'La garantía cubre defectos en la reparación realizada. No cubre daños por mal uso, accidentes o problemas no relacionados con el trabajo efectuado. Tiempo máximo de permanencia del equipo: 30 días después de notificada la finalización.',
+    '¡Gracias por confiar en TESIG! Su satisfacción es nuestra prioridad.',
+    'https://facebook.com/tesigec',
+    'https://instagram.com/tesig_ec',
+    '+593 99 123 4567',
+    true,
+    NOW(),
+    NOW()
+)
+ON CONFLICT DO NOTHING;
+
+-- =============================================================================
+-- INSERTAR PIEZAS/INVENTARIO DE PRUEBA
+-- =============================================================================
+
+INSERT INTO piezas (
+    codigo, nombre, descripcion, categoria, marca, modelo_compatible,
+    precio_costo, precio_venta, stock, stock_minimo, ubicacion, activo,
+    created_at, updated_at, deleted_at
+)
+VALUES
+    ('LCD-SAM-15.6', 'Pantalla LCD 15.6" Samsung', 'Pantalla LCD de reemplazo para laptops Samsung de 15.6 pulgadas', 'Pantallas', 'Samsung', 'Series 3, 5', 85.00, 150.00, 5, 2, 'Estante A-1', true, NOW(), NOW(), NULL),
+    ('LCD-HP-14', 'Pantalla LCD 14" HP', 'Pantalla LCD HD para laptops HP de 14 pulgadas', 'Pantallas', 'HP', 'Pavilion, ProBook', 75.00, 130.00, 8, 3, 'Estante A-1', true, NOW(), NOW(), NULL),
+    ('BAT-MAC-A1466', 'Batería MacBook Air 13"', 'Batería de reemplazo para MacBook Air 13" 2012-2017', 'Baterías', 'Apple', 'MacBook Air A1466', 45.00, 95.00, 10, 4, 'Estante B-2', true, NOW(), NOW(), NULL),
+    ('BAT-DELL-E7450', 'Batería Dell Latitude E7450', 'Batería 4 celdas para Dell Latitude E7450/E7440', 'Baterías', 'Dell', 'Latitude E7450, E7440', 55.00, 110.00, 6, 2, 'Estante B-2', true, NOW(), NOW(), NULL),
+    ('TEC-LEN-T480', 'Teclado Lenovo ThinkPad T480', 'Teclado español retroiluminado para ThinkPad T480', 'Teclados', 'Lenovo', 'ThinkPad T480, T490', 40.00, 85.00, 4, 2, 'Estante C-1', true, NOW(), NOW(), NULL),
+    ('TEC-HP-840G5', 'Teclado HP EliteBook 840 G5', 'Teclado español con trackpoint para EliteBook 840 G5', 'Teclados', 'HP', 'EliteBook 840 G5, G6', 45.00, 90.00, 3, 2, 'Estante C-1', true, NOW(), NOW(), NULL),
+    ('RAM-DDR4-8GB', 'Memoria RAM DDR4 8GB', 'Memoria RAM DDR4 2666MHz 8GB SODIMM', 'Memorias', 'Kingston', 'Universal', 25.00, 55.00, 15, 5, 'Estante D-1', true, NOW(), NOW(), NULL),
+    ('RAM-DDR4-16GB', 'Memoria RAM DDR4 16GB', 'Memoria RAM DDR4 3200MHz 16GB SODIMM', 'Memorias', 'Crucial', 'Universal', 45.00, 95.00, 8, 3, 'Estante D-1', true, NOW(), NOW(), NULL),
+    ('SSD-SAM-500GB', 'SSD Samsung 500GB', 'Disco SSD SATA 500GB Samsung 870 EVO', 'Almacenamiento', 'Samsung', 'Universal', 50.00, 95.00, 12, 4, 'Estante E-1', true, NOW(), NOW(), NULL),
+    ('SSD-NVME-1TB', 'SSD NVMe 1TB', 'Disco SSD NVMe M.2 1TB Western Digital', 'Almacenamiento', 'Western Digital', 'Universal NVMe', 75.00, 145.00, 6, 2, 'Estante E-2', true, NOW(), NOW(), NULL),
+    ('CARG-USB-C-65W', 'Cargador USB-C 65W', 'Cargador universal USB-C PD 65W', 'Cargadores', 'Genérico', 'Universal USB-C', 18.00, 45.00, 20, 8, 'Estante F-1', true, NOW(), NOW(), NULL),
+    ('CARG-MAC-61W', 'Cargador MacBook Pro 61W', 'Cargador USB-C 61W para MacBook Pro 13"', 'Cargadores', 'Apple', 'MacBook Pro 13"', 35.00, 75.00, 5, 2, 'Estante F-1', true, NOW(), NOW(), NULL),
+    ('PASTA-TERMICA', 'Pasta Térmica Arctic MX-4', 'Pasta térmica de alto rendimiento 4g', 'Consumibles', 'Arctic', 'Universal', 8.00, 18.00, 25, 10, 'Estante G-1', true, NOW(), NOW(), NULL),
+    ('FLEX-PANTALLA', 'Cable Flex Pantalla Universal', 'Cable flex LVDS 40 pines para pantallas de laptop', 'Cables', 'Genérico', 'Universal 40 pines', 5.00, 15.00, 30, 10, 'Estante G-2', true, NOW(), NOW(), NULL),
+    ('VEN-CPU-UNIV', 'Ventilador CPU Laptop', 'Ventilador de CPU para laptops, varios modelos', 'Ventiladores', 'Genérico', 'Universal', 12.00, 30.00, 18, 6, 'Estante H-1', true, NOW(), NOW(), NULL)
+ON CONFLICT (codigo) DO NOTHING;
+
+-- =============================================================================
 -- INSERTAR CLIENTES DE PRUEBA
 -- =============================================================================
 
