@@ -7,6 +7,10 @@ import com.tesig.model.Ticket;
 import com.tesig.repository.TicketRepository;
 import com.tesig.dto.AgregarPiezaTicketDTO;
 import com.tesig.dto.TicketPiezaResponseDTO;
+import com.tesig.dto.equipo.ActualizarEquipoDTO;
+import com.tesig.dto.equipo.CrearEquipoDTO;
+import com.tesig.dto.equipo.EquipoResponseDTO;
+import com.tesig.service.IEquipoService;
 import com.tesig.service.IPDFService;
 import com.tesig.service.ITicketPiezaService;
 import com.tesig.service.ITicketService;
@@ -55,6 +59,7 @@ public class TicketController {
     private final IPDFService pdfService;
     private final TicketRepository ticketRepository;
     private final ITicketPiezaService ticketPiezaService;
+    private final IEquipoService equipoService;
 
     // ==================== CONSULTAS ====================
 
@@ -489,6 +494,142 @@ public class TicketController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(ticketPieza, "Cantidad actualizada exitosamente")
+        );
+    }
+
+    // ==================== GESTIÓN DE EQUIPOS ====================
+
+    @PostMapping("/{id}/equipos")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA')")
+    @Operation(
+            summary = "Agregar equipo a ticket",
+            description = "Agrega un nuevo equipo al ticket. Permite manejar múltiples equipos por ticket."
+    )
+    public ResponseEntity<ApiResponse<EquipoResponseDTO>> agregarEquipo(
+            @PathVariable Long id,
+            @Valid @RequestBody CrearEquipoDTO dto
+    ) {
+        log.info("POST /api/tickets/{}/equipos - Agregando equipo al ticket", id);
+
+        EquipoResponseDTO equipo = equipoService.agregarEquipo(id, dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(equipo, "Equipo agregado al ticket exitosamente"));
+    }
+
+    @GetMapping("/{id}/equipos")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Listar equipos del ticket",
+            description = "Obtiene todos los equipos asociados a un ticket"
+    )
+    public ResponseEntity<ApiResponse<List<EquipoResponseDTO>>> listarEquiposDeTicket(
+            @PathVariable Long id
+    ) {
+        log.info("GET /api/tickets/{}/equipos - Listando equipos del ticket", id);
+
+        List<EquipoResponseDTO> equipos = equipoService.obtenerEquiposDeTicket(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(equipos, "Equipos del ticket obtenidos exitosamente")
+        );
+    }
+
+    @GetMapping("/{ticketId}/equipos/{equipoId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Obtener equipo por ID",
+            description = "Obtiene los detalles de un equipo específico"
+    )
+    public ResponseEntity<ApiResponse<EquipoResponseDTO>> obtenerEquipo(
+            @PathVariable Long ticketId,
+            @PathVariable Long equipoId
+    ) {
+        log.info("GET /api/tickets/{}/equipos/{} - Obteniendo equipo", ticketId, equipoId);
+
+        EquipoResponseDTO equipo = equipoService.obtenerEquipoPorId(equipoId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(equipo, "Equipo obtenido exitosamente")
+        );
+    }
+
+    @PutMapping("/{ticketId}/equipos/{equipoId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA', 'TECNICO')")
+    @Operation(
+            summary = "Actualizar equipo",
+            description = "Actualiza la información de un equipo (datos, diagnóstico, trabajo realizado)"
+    )
+    public ResponseEntity<ApiResponse<EquipoResponseDTO>> actualizarEquipo(
+            @PathVariable Long ticketId,
+            @PathVariable Long equipoId,
+            @Valid @RequestBody ActualizarEquipoDTO dto
+    ) {
+        log.info("PUT /api/tickets/{}/equipos/{} - Actualizando equipo", ticketId, equipoId);
+
+        EquipoResponseDTO equipo = equipoService.actualizarEquipo(equipoId, dto);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(equipo, "Equipo actualizado exitosamente")
+        );
+    }
+
+    @PutMapping("/{ticketId}/equipos/{equipoId}/diagnostico")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'TECNICO')")
+    @Operation(
+            summary = "Actualizar diagnóstico del equipo",
+            description = "Actualiza el diagnóstico de un equipo específico"
+    )
+    public ResponseEntity<ApiResponse<EquipoResponseDTO>> actualizarDiagnosticoEquipo(
+            @PathVariable Long ticketId,
+            @PathVariable Long equipoId,
+            @RequestBody String diagnostico
+    ) {
+        log.info("PUT /api/tickets/{}/equipos/{}/diagnostico - Actualizando diagnóstico", ticketId, equipoId);
+
+        EquipoResponseDTO equipo = equipoService.actualizarDiagnostico(equipoId, diagnostico);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(equipo, "Diagnóstico del equipo actualizado")
+        );
+    }
+
+    @PutMapping("/{ticketId}/equipos/{equipoId}/trabajo-realizado")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'TECNICO')")
+    @Operation(
+            summary = "Actualizar trabajo realizado en equipo",
+            description = "Actualiza el trabajo realizado en un equipo específico"
+    )
+    public ResponseEntity<ApiResponse<EquipoResponseDTO>> actualizarTrabajoRealizadoEquipo(
+            @PathVariable Long ticketId,
+            @PathVariable Long equipoId,
+            @RequestBody String trabajoRealizado
+    ) {
+        log.info("PUT /api/tickets/{}/equipos/{}/trabajo-realizado - Actualizando trabajo", ticketId, equipoId);
+
+        EquipoResponseDTO equipo = equipoService.actualizarTrabajoRealizado(equipoId, trabajoRealizado);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(equipo, "Trabajo realizado actualizado")
+        );
+    }
+
+    @DeleteMapping("/{ticketId}/equipos/{equipoId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA')")
+    @Operation(
+            summary = "Eliminar equipo del ticket",
+            description = "Elimina un equipo del ticket (soft delete)"
+    )
+    public ResponseEntity<ApiResponse<Void>> eliminarEquipo(
+            @PathVariable Long ticketId,
+            @PathVariable Long equipoId
+    ) {
+        log.info("DELETE /api/tickets/{}/equipos/{} - Eliminando equipo", ticketId, equipoId);
+
+        equipoService.eliminarEquipo(equipoId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(null, "Equipo eliminado del ticket exitosamente")
         );
     }
 }
