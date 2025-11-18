@@ -37,4 +37,23 @@ public interface IPDFService {
      * @return Array de bytes del PDF
      */
     byte[] generarPresupuestoPDF(Ticket ticket);
+
+    /**
+     * Genera un PDF del comprobante de entrega exitosa.
+     *
+     * El PDF incluye:
+     * - Información del taller
+     * - Número de ticket
+     * - Resumen de trabajo realizado
+     * - Piezas utilizadas
+     * - Detalle de costos
+     * - Descuentos aplicados
+     * - Total final
+     * - Información de garantía
+     * - Firma del cliente
+     *
+     * @param ticket Ticket entregado
+     * @return Array de bytes del PDF
+     */
+    byte[] generarComprobanteEntregaPDF(Ticket ticket);
 }

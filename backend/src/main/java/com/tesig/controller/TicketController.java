@@ -387,6 +387,30 @@ public class TicketController {
                 .body(pdfBytes);
     }
 
+    @GetMapping("/{id}/comprobante-entrega-pdf")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA')")
+    @Operation(
+            summary = "Descargar comprobante de entrega en PDF",
+            description = "Genera y descarga el comprobante de entrega del ticket en formato PDF con detalle de trabajo, costos, descuentos y garantía"
+    )
+    public ResponseEntity<byte[]> descargarComprobanteEntregaPDF(@PathVariable Long id) {
+        log.info("GET /api/tickets/{}/comprobante-entrega-pdf - Generando PDF del comprobante de entrega", id);
+
+        Ticket ticket = ticketRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("Ticket no encontrado con ID: " + id));
+
+        byte[] pdfBytes = pdfService.generarComprobanteEntregaPDF(ticket);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "ComprobanteEntrega-" + ticket.getNumeroTicket() + ".pdf");
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
+
     // ==================== GESTIÓN DE PIEZAS ====================
 
     @PostMapping("/{id}/piezas")

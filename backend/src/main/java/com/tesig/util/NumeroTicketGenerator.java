@@ -1,5 +1,7 @@
 package com.tesig.util;
 
+import com.tesig.model.ConfiguracionEmpresa;
+import com.tesig.repository.ConfiguracionEmpresaRepository;
 import com.tesig.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,12 +15,18 @@ import java.time.format.DateTimeFormatter;
  *
  * Aplicación de principios SOLID:
  * - Single Responsibility: Solo genera números de ticket
- * - Dependency Inversion: Depende de la abstracción (TicketRepository)
+ * - Dependency Inversion: Depende de abstracciones (Repositories)
  *
  * Pattern: Factory Method Pattern
  *
- * Formato: TKT-YYYYMMDD-NNNN
- * Ejemplo: TKT-20251105-0001
+ * Formato escalable: {EMPRESA}-{SUCURSAL}-{YYYYMMDD}-{NNNN}
+ * Ejemplo: TES-MAT-20251118-0001
+ *
+ * Esto permite:
+ * - Identificar la empresa/taller de origen
+ * - Identificar la sucursal
+ * - Escalar a múltiples talleres
+ * - Mantener trazabilidad completa
  */
 @Component
 @RequiredArgsConstructor
@@ -26,10 +34,12 @@ import java.time.format.DateTimeFormatter;
 public class NumeroTicketGenerator {
 
     private final TicketRepository ticketRepository;
+    private final ConfiguracionEmpresaRepository configuracionRepository;
 
-    private static final String PREFIX = "TKT";
+    private static final String DEFAULT_EMPRESA = "TES";
+    private static final String DEFAULT_SUCURSAL = "MAT";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private static final int SEQUENCE_LENGTH = 4;
+    private static final int DEFAULT_SEQUENCE_LENGTH = 4;
 
     /**
      * Genera un número de ticket único.
@@ -42,61 +52,86 @@ public class NumeroTicketGenerator {
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DATE_FORMAT);
 
-        // Buscar el último ticket del día
-        int sequence = getNextSequence(datePart);
+        // Obtener configuración de empresa
+        ConfiguracionEmpresa config = getConfiguracion();
+        String prefix = buildPrefix(config);
+        int sequenceLength = config != null && config.getLongitudSecuencia() != null
+                ? config.getLongitudSecuencia()
+                : DEFAULT_SEQUENCE_LENGTH;
 
-        String numeroTicket = buildNumeroTicket(datePart, sequence);
+        // Buscar el último ticket del día
+        int sequence = getNextSequence(prefix, datePart);
+
+        String numeroTicket = buildNumeroTicket(prefix, datePart, sequence, sequenceLength);
 
         // Verificar que no exista (por seguridad)
         while (ticketRepository.existsByNumeroTicket(numeroTicket)) {
             log.warn("Número de ticket duplicado detectado: {}, generando nuevo", numeroTicket);
             sequence++;
-            numeroTicket = buildNumeroTicket(datePart, sequence);
+            numeroTicket = buildNumeroTicket(prefix, datePart, sequence, sequenceLength);
         }
 
-        log.debug("Número de ticket generado: {}", numeroTicket);
+        log.info("Número de ticket generado: {}", numeroTicket);
         return numeroTicket;
+    }
+
+    /**
+     * Obtiene la configuración activa de la empresa.
+     *
+     * @return ConfiguracionEmpresa o null si no existe
+     */
+    private ConfiguracionEmpresa getConfiguracion() {
+        return configuracionRepository.findFirstActiveConfiguration().orElse(null);
+    }
+
+    /**
+     * Construye el prefijo del ticket basado en la configuración.
+     *
+     * @param config Configuración de empresa
+     * @return Prefijo (ej: TES-MAT)
+     */
+    private String buildPrefix(ConfiguracionEmpresa config) {
+        if (config != null) {
+            return config.getPrefijoCompleto();
+        }
+        return DEFAULT_EMPRESA + "-" + DEFAULT_SUCURSAL;
     }
 
     /**
      * Obtiene el siguiente número de secuencia para el día.
      *
+     * @param prefix Prefijo del ticket
      * @param datePart Parte de fecha en formato yyyyMMdd
      * @return Siguiente número de secuencia
      */
-    private int getNextSequence(String datePart) {
-        String pattern = PREFIX + "-" + datePart + "%";
+    private int getNextSequence(String prefix, String datePart) {
+        // Buscar el último número de secuencia del día
+        String pattern = prefix + "-" + datePart + "-%";
 
-        // Buscar todos los tickets del día y obtener el máximo
-        // Este query busca el último número de secuencia usado
-        long count = ticketRepository.count();
+        // Contar tickets existentes con este patrón y sumar 1
+        // Este es un approach simplificado que funciona con existsByNumeroTicket
+        // Para alta concurrencia, considera usar una tabla de secuencias con locks optimistas
 
-        // Por simplicidad, usar un contador basado en fecha
-        // En producción real, considera usar una tabla de secuencias
-        String startOfDay = PREFIX + "-" + datePart + "-0000";
-        String endOfDay = PREFIX + "-" + datePart + "-9999";
-
-        // Contar tickets del día
-        // Nota: Este es un approach simplificado. Para alta concurrencia,
-        // considera usar una tabla de secuencias con locks optimistas
-
-        return 1; // Por ahora retorna 1, se validará con existsByNumeroTicket
+        return 1;
     }
 
     /**
      * Construye el número de ticket con formato.
      *
+     * @param prefix Prefijo de empresa-sucursal
      * @param datePart Fecha en formato yyyyMMdd
      * @param sequence Número de secuencia
+     * @param sequenceLength Longitud del número de secuencia
      * @return Número de ticket formateado
      */
-    private String buildNumeroTicket(String datePart, int sequence) {
-        String sequenceStr = String.format("%0" + SEQUENCE_LENGTH + "d", sequence);
-        return PREFIX + "-" + datePart + "-" + sequenceStr;
+    private String buildNumeroTicket(String prefix, String datePart, int sequence, int sequenceLength) {
+        String sequenceStr = String.format("%0" + sequenceLength + "d", sequence);
+        return prefix + "-" + datePart + "-" + sequenceStr;
     }
 
     /**
      * Valida el formato de un número de ticket.
+     * Soporta tanto el formato antiguo (TKT-) como el nuevo (EMPRESA-SUCURSAL-)
      *
      * @param numeroTicket Número a validar
      * @return true si el formato es válido
@@ -106,9 +141,12 @@ public class NumeroTicketGenerator {
             return false;
         }
 
-        // Validar formato: TKT-YYYYMMDD-NNNN
-        String regex = "^TKT-\\d{8}-\\d{4}$";
-        return numeroTicket.matches(regex);
+        // Formato antiguo: TKT-YYYYMMDD-NNNN
+        // Formato nuevo: XXX-XXX-YYYYMMDD-NNNN o XXX-XXXX-YYYYMMDD-NNNN
+        String regexOld = "^TKT-\\d{8}-\\d{4}$";
+        String regexNew = "^[A-Z]{2,5}-[A-Z0-9]{2,4}-\\d{8}-\\d{4,6}$";
+
+        return numeroTicket.matches(regexOld) || numeroTicket.matches(regexNew);
     }
 
     /**
@@ -122,8 +160,67 @@ public class NumeroTicketGenerator {
             throw new IllegalArgumentException("Formato de número de ticket inválido");
         }
 
-        // Formato: TKT-YYYYMMDD-NNNN
-        // Posición: 0123456789...
-        return numeroTicket.substring(4, 12);
+        // Buscar la parte de fecha (8 dígitos consecutivos)
+        String[] parts = numeroTicket.split("-");
+        for (String part : parts) {
+            if (part.matches("\\d{8}")) {
+                return part;
+            }
+        }
+
+        throw new IllegalArgumentException("No se pudo extraer la fecha del número de ticket");
+    }
+
+    /**
+     * Extrae el código de empresa del número de ticket.
+     *
+     * @param numeroTicket Número de ticket
+     * @return Código de empresa
+     */
+    public String extractCodigoEmpresa(String numeroTicket) {
+        if (numeroTicket == null || numeroTicket.isBlank()) {
+            return null;
+        }
+
+        String[] parts = numeroTicket.split("-");
+        if (parts.length >= 1) {
+            return parts[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * Extrae el código de sucursal del número de ticket.
+     *
+     * @param numeroTicket Número de ticket
+     * @return Código de sucursal
+     */
+    public String extractCodigoSucursal(String numeroTicket) {
+        if (numeroTicket == null || numeroTicket.isBlank()) {
+            return null;
+        }
+
+        String[] parts = numeroTicket.split("-");
+        if (parts.length >= 2 && !parts[1].matches("\\d{8}")) {
+            return parts[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Genera el formato de visualización del número de ticket.
+     * Útil para mostrar en documentos impresos.
+     *
+     * @param numeroTicket Número de ticket
+     * @return Formato con espacios para mejor legibilidad
+     */
+    public String formatForDisplay(String numeroTicket) {
+        if (numeroTicket == null) return "";
+
+        // Agregar espacios entre las partes principales para mejor legibilidad
+        // TES-MAT-20251118-0001 -> TES MAT 20251118 0001
+        return numeroTicket.replace("-", " ");
     }
 }
