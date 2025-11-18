@@ -125,6 +125,26 @@ public class Ticket extends BaseEntity {
     @Builder.Default
     private List<TicketPieza> piezasUtilizadas = new ArrayList<>();
 
+    /**
+     * Lista de equipos asociados a este ticket (para múltiples equipos)
+     */
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Equipo> equipos = new ArrayList<>();
+
+    // Descuentos
+    @Column(name = "descuento_porcentaje", precision = 5, scale = 2)
+    private BigDecimal descuentoPorcentaje;
+
+    @Column(name = "descuento_monto", precision = 10, scale = 2)
+    private BigDecimal descuentoMonto;
+
+    @Column(name = "motivo_descuento", length = 500)
+    private String motivoDescuento;
+
+    @Column(name = "total_con_descuento", precision = 10, scale = 2)
+    private BigDecimal totalConDescuento;
+
     // Métodos de utilidad
 
     /**
@@ -165,11 +185,78 @@ public class Ticket extends BaseEntity {
         this.presupuestoTotal = manoObra.add(piezas);
     }
 
+    /**
+     * Agrega un equipo al ticket
+     */
+    public void agregarEquipo(Equipo equipo) {
+        equipos.add(equipo);
+        equipo.setTicket(this);
+    }
+
+    /**
+     * Remueve un equipo del ticket
+     */
+    public void removerEquipo(Equipo equipo) {
+        equipos.remove(equipo);
+        equipo.setTicket(null);
+    }
+
+    /**
+     * Aplica descuento por porcentaje
+     */
+    public void aplicarDescuentoPorcentaje(BigDecimal porcentaje, String motivo) {
+        if (presupuestoTotal == null || presupuestoTotal.compareTo(BigDecimal.ZERO) == 0) {
+            return;
+        }
+        this.descuentoPorcentaje = porcentaje;
+        this.descuentoMonto = presupuestoTotal.multiply(porcentaje).divide(BigDecimal.valueOf(100));
+        this.motivoDescuento = motivo;
+        calcularTotalConDescuento();
+    }
+
+    /**
+     * Aplica descuento por monto fijo
+     */
+    public void aplicarDescuentoMonto(BigDecimal monto, String motivo) {
+        if (presupuestoTotal == null || presupuestoTotal.compareTo(BigDecimal.ZERO) == 0) {
+            return;
+        }
+        this.descuentoMonto = monto;
+        this.descuentoPorcentaje = monto.multiply(BigDecimal.valueOf(100)).divide(presupuestoTotal, 2, java.math.RoundingMode.HALF_UP);
+        this.motivoDescuento = motivo;
+        calcularTotalConDescuento();
+    }
+
+    /**
+     * Calcula el total con descuento
+     */
+    public void calcularTotalConDescuento() {
+        BigDecimal total = presupuestoTotal != null ? presupuestoTotal : BigDecimal.ZERO;
+        BigDecimal descuento = descuentoMonto != null ? descuentoMonto : BigDecimal.ZERO;
+        this.totalConDescuento = total.subtract(descuento);
+        if (this.totalConDescuento.compareTo(BigDecimal.ZERO) < 0) {
+            this.totalConDescuento = BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Obtiene el total final (con descuento si aplica, sino el presupuesto total)
+     */
+    public BigDecimal getTotalFinal() {
+        if (totalConDescuento != null && totalConDescuento.compareTo(BigDecimal.ZERO) > 0) {
+            return totalConDescuento;
+        }
+        return presupuestoTotal != null ? presupuestoTotal : BigDecimal.ZERO;
+    }
+
     @PrePersist
     @PreUpdate
     private void calcularTotalAntesDeGuardar() {
         if (presupuestoManoObra != null || presupuestoPiezas != null) {
             calcularPresupuestoTotal();
+        }
+        if (descuentoMonto != null || descuentoPorcentaje != null) {
+            calcularTotalConDescuento();
         }
     }
 }
