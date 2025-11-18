@@ -1,0 +1,372 @@
+.detalle-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 40px;
+}
+
+.detalle-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 0 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+
+    i {
+      margin-right: 15px;
+    }
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .btn-outline-light {
+    &:hover {
+      transform: translateY(-2px);
+      transition: all 0.2s;
+    }
+  }
+}
+
+// Cards
+.card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.3s ease-in;
+
+  .card-header {
+    background-color: white;
+    border-bottom: 2px solid #f0f0f0;
+    padding: 20px;
+
+    h5 {
+      color: #667eea;
+      font-weight: 600;
+      margin: 0;
+
+      i {
+        margin-right: 10px;
+      }
+
+      .badge {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+      }
+    }
+  }
+
+  .card-body {
+    padding: 30px;
+  }
+}
+
+// Info Card
+.info-card {
+  .info-item {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-of-type {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: #6c757d;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+
+      i {
+        margin-right: 8px;
+        color: #667eea;
+        width: 16px;
+        text-align: center;
+      }
+    }
+
+    span {
+      display: block;
+      color: #495057;
+      font-size: 1rem;
+      margin-left: 24px;
+
+      a {
+        color: #667eea;
+        text-decoration: none;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #764ba2;
+          text-decoration: underline;
+        }
+      }
+
+      &.badge {
+        display: inline-block;
+        margin-left: 24px;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+      }
+    }
+  }
+
+  hr {
+    margin: 25px 0;
+    border-top: 2px solid #f0f0f0;
+    opacity: 1;
+  }
+
+  .btn {
+    font-weight: 600;
+    padding: 12px;
+    transition: all 0.2s;
+
+    i {
+      margin-right: 8px;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Tickets Card
+.tickets-card {
+  .table {
+    margin-bottom: 0;
+
+    thead {
+      th {
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding: 15px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    tbody {
+      tr {
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f8f9fa;
+          transform: scale(1.001);
+        }
+
+        td {
+          padding: 15px;
+          vertical-align: middle;
+
+          strong {
+            color: #667eea;
+          }
+
+          .badge {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+
+  .text-center {
+    .fa-ticket-alt {
+      opacity: 0.3;
+    }
+
+    h5 {
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-weight: 600;
+
+      i {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Alert
+.alert {
+  border: none;
+  border-radius: 8px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  i {
+    margin-right: 10px;
+  }
+}
+
+// Buttons
+.btn {
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  i {
+    margin-right: 6px;
+  }
+}
+
+.btn-sm {
+  padding: 6px 12px;
+
+  &:hover {
+    z-index: 1;
+  }
+}
+
+// Loading spinner
+.spinner-border {
+  animation: spinner-border 0.75s linear infinite;
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .detalle-header {
+    padding: 30px 0 20px;
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+
+    .col-md-8,
+    .col-md-4 {
+      text-align: center !important;
+    }
+
+    .col-md-4 {
+      margin-top: 15px;
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+
+  .card {
+    .card-body {
+      padding: 20px;
+    }
+  }
+
+  .info-card {
+    margin-bottom: 20px;
+  }
+
+  .table-responsive {
+    font-size: 0.85rem;
+
+    thead th {
+      font-size: 0.75rem;
+      padding: 10px;
+    }
+
+    tbody td {
+      padding: 10px;
+
+      small {
+        font-size: 0.7rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .detalle-header {
+    h1 {
+      font-size: 1.5rem;
+
+      i {
+        margin-right: 10px;
+      }
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .info-card {
+    .info-item {
+      label,
+      span {
+        font-size: 0.9rem;
+      }
+    }
+
+    .btn {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .table {
+    thead {
+      th {
+        &:nth-child(4) { // Fecha
+          display: none;
+        }
+      }
+    }
+
+    tbody {
+      td {
+        &:nth-child(4) { // Fecha
+          display: none;
+        }
+      }
+    }
+  }
+}

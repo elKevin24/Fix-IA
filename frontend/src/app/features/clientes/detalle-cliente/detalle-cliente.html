@@ -1,0 +1,236 @@
+<div class="detalle-container">
+  <!-- Header -->
+  <div class="detalle-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1>
+            <i class="fas fa-user"></i>
+            Detalle del Cliente
+          </h1>
+          <p *ngIf="cliente">{{ cliente.nombre }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <button class="btn btn-outline-light" routerLink="/clientes">
+            <i class="fas fa-arrow-left"></i>
+            Volver
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="container mt-4">
+    <!-- Error Message -->
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center my-5" *ngIf="isLoading">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3 text-muted">Cargando información del cliente...</p>
+    </div>
+
+    <!-- Cliente Details -->
+    <div class="row" *ngIf="!isLoading && cliente">
+      <!-- Información del Cliente -->
+      <div class="col-lg-4">
+        <div class="card info-card">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-info-circle"></i>
+              Información Personal
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="info-item">
+              <label>
+                <i class="fas fa-hashtag"></i>
+                ID:
+              </label>
+              <span>#{{ cliente.id }}</span>
+            </div>
+
+            <div class="info-item">
+              <label>
+                <i class="fas fa-user"></i>
+                Nombre:
+              </label>
+              <span>{{ cliente.nombre }}</span>
+            </div>
+
+            <div class="info-item">
+              <label>
+                <i class="fas fa-envelope"></i>
+                Email:
+              </label>
+              <span>
+                <a [href]="'mailto:' + cliente.email">{{ cliente.email }}</a>
+              </span>
+            </div>
+
+            <div class="info-item">
+              <label>
+                <i class="fas fa-phone"></i>
+                Teléfono:
+              </label>
+              <span>
+                <a [href]="'tel:' + cliente.telefono">{{ cliente.telefono }}</a>
+              </span>
+            </div>
+
+            <div class="info-item" *ngIf="cliente.direccion">
+              <label>
+                <i class="fas fa-map-marker-alt"></i>
+                Dirección:
+              </label>
+              <span>{{ cliente.direccion }}</span>
+            </div>
+
+            <div class="info-item" *ngIf="cliente.dui">
+              <label>
+                <i class="fas fa-id-card"></i>
+                DUI:
+              </label>
+              <span>{{ cliente.dui }}</span>
+            </div>
+
+            <div class="info-item" *ngIf="cliente.nit">
+              <label>
+                <i class="fas fa-file-invoice"></i>
+                NIT:
+              </label>
+              <span>{{ cliente.nit }}</span>
+            </div>
+
+            <div class="info-item">
+              <label>
+                <i class="fas fa-ticket-alt"></i>
+                Total Tickets:
+              </label>
+              <span class="badge bg-primary">{{ cliente.totalTickets || 0 }}</span>
+            </div>
+
+            <hr>
+
+            <!-- Acciones -->
+            <div class="d-grid gap-2">
+              <button
+                class="btn btn-warning"
+                [routerLink]="['/clientes', cliente.id, 'editar']"
+              >
+                <i class="fas fa-edit"></i>
+                Editar Cliente
+              </button>
+
+              <button
+                class="btn btn-danger"
+                (click)="eliminarCliente()"
+              >
+                <i class="fas fa-trash"></i>
+                Eliminar Cliente
+              </button>
+
+              <button
+                class="btn btn-primary"
+                routerLink="/tickets/nuevo"
+                [queryParams]="{ clienteId: cliente.id }"
+              >
+                <i class="fas fa-plus"></i>
+                Nuevo Ticket
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tickets del Cliente -->
+      <div class="col-lg-8">
+        <div class="card tickets-card">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-list"></i>
+              Historial de Tickets
+              <span class="badge bg-primary ms-2">{{ tickets.length }}</span>
+            </h5>
+          </div>
+          <div class="card-body p-0">
+            <!-- Loading Tickets -->
+            <div class="text-center py-4" *ngIf="isLoadingTickets">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando tickets...</span>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" *ngIf="!isLoadingTickets && tickets.length === 0">
+              <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No hay tickets registrados</h5>
+              <p class="text-muted">Este cliente aún no tiene tickets asociados</p>
+              <button
+                class="btn btn-primary"
+                routerLink="/tickets/nuevo"
+                [queryParams]="{ clienteId: cliente.id }"
+              >
+                <i class="fas fa-plus"></i>
+                Crear Primer Ticket
+              </button>
+            </div>
+
+            <!-- Tickets List -->
+            <div class="table-responsive" *ngIf="!isLoadingTickets && tickets.length > 0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Número</th>
+                    <th>Equipo</th>
+                    <th>Estado</th>
+                    <th>Fecha Ingreso</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let ticket of tickets">
+                    <td class="align-middle">
+                      <strong class="text-primary">{{ ticket.numeroTicket }}</strong>
+                    </td>
+                    <td class="align-middle">
+                      <div>
+                        <strong>{{ ticket.tipoEquipo }}</strong>
+                      </div>
+                      <small class="text-muted" *ngIf="ticket.marca || ticket.modelo">
+                        {{ ticket.marca }} {{ ticket.modelo }}
+                      </small>
+                    </td>
+                    <td class="align-middle">
+                      <span class="badge" [ngClass]="getEstadoBadgeClass(ticket.estado)">
+                        {{ formatEstado(ticket.estado) }}
+                      </span>
+                    </td>
+                    <td class="align-middle">
+                      {{ formatFecha(ticket.fechaIngreso) }}
+                    </td>
+                    <td class="align-middle text-center">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        [routerLink]="['/tickets', ticket.id]"
+                        title="Ver detalle"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

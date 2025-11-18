@@ -4,8 +4,12 @@ import { authGuard } from './core/guards';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: '/consulta',
     pathMatch: 'full'
+  },
+  {
+    path: 'consulta',
+    loadComponent: () => import('./features/public/consulta-ticket/consulta-ticket').then(m => m.ConsultaTicketComponent)
   },
   {
     path: 'login',
@@ -17,7 +21,29 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'clientes',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/clientes/lista-clientes/lista-clientes').then(m => m.ListaClientesComponent)
+      },
+      {
+        path: 'nuevo',
+        loadComponent: () => import('./features/clientes/form-cliente/form-cliente').then(m => m.FormClienteComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/clientes/detalle-cliente/detalle-cliente').then(m => m.DetalleClienteComponent)
+      },
+      {
+        path: ':id/editar',
+        loadComponent: () => import('./features/clientes/form-cliente/form-cliente').then(m => m.FormClienteComponent)
+      }
+    ]
+  },
+  {
     path: '**',
-    redirectTo: '/dashboard'
+    redirectTo: '/consulta'
   }
 ];
