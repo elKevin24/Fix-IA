@@ -1,0 +1,401 @@
+<div class="detalle-container">
+  <!-- Header -->
+  <div class="detalle-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1>
+            <i class="fas fa-ticket-alt"></i>
+            Detalle del Ticket
+          </h1>
+          <p *ngIf="ticket">{{ ticket.numeroTicket }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <button class="btn btn-outline-light me-2" (click)="descargarPDF()" [disabled]="isDownloadingPDF">
+            <i class="fas fa-file-pdf"></i>
+            PDF
+          </button>
+          <button class="btn btn-outline-light" routerLink="/tickets">
+            <i class="fas fa-arrow-left"></i>
+            Volver
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="container mt-4">
+    <!-- Messages -->
+    <div class="alert alert-success" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center my-5" *ngIf="isLoading">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3 text-muted">Cargando información del ticket...</p>
+    </div>
+
+    <!-- Ticket Details -->
+    <div class="row" *ngIf="!isLoading && ticket">
+      <!-- Left Column: Info -->
+      <div class="col-lg-4">
+        <!-- Estado y Acciones -->
+        <div class="card info-card mb-3">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-info-circle"></i>
+              Estado Actual
+            </h5>
+          </div>
+          <div class="card-body text-center">
+            <span class="badge estado-badge" [ngClass]="getEstadoBadgeClass(ticket.estado)">
+              {{ formatEstado(ticket.estado) }}
+            </span>
+            <p class="mt-3 mb-0 text-muted">
+              <small>
+                <i class="fas fa-clock"></i>
+                Actualizado: {{ formatFecha(ticket.updatedAt) }}
+              </small>
+            </p>
+          </div>
+        </div>
+
+        <!-- Información General -->
+        <div class="card info-card mb-3">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-clipboard"></i>
+              Información General
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="info-item">
+              <label>Número:</label>
+              <span>{{ ticket.numeroTicket }}</span>
+            </div>
+            <div class="info-item">
+              <label>Prioridad:</label>
+              <span class="badge" [ngClass]="getPrioridadBadgeClass(ticket.prioridad)">
+                {{ ticket.prioridad }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Fecha Ingreso:</label>
+              <span>{{ formatFecha(ticket.fechaIngreso) }}</span>
+            </div>
+            <div class="info-item" *ngIf="ticket.fechaEntrega">
+              <label>Fecha Entrega:</label>
+              <span>{{ formatFecha(ticket.fechaEntrega) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cliente -->
+        <div class="card info-card mb-3">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-user"></i>
+              Cliente
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="info-item">
+              <label>Nombre:</label>
+              <span>{{ ticket.cliente.nombre }}</span>
+            </div>
+            <div class="info-item">
+              <label>Email:</label>
+              <span>
+                <a [href]="'mailto:' + ticket.cliente.email">{{ ticket.cliente.email }}</a>
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Teléfono:</label>
+              <span>
+                <a [href]="'tel:' + ticket.cliente.telefono">{{ ticket.cliente.telefono }}</a>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Técnico Asignado -->
+        <div class="card info-card mb-3" *ngIf="ticket.tecnicoAsignado">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-user-cog"></i>
+              Técnico Asignado
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="info-item">
+              <label>Nombre:</label>
+              <span>{{ ticket.tecnicoAsignado.nombre }} {{ ticket.tecnicoAsignado.apellido }}</span>
+            </div>
+            <div class="info-item">
+              <label>Email:</label>
+              <span>{{ ticket.tecnicoAsignado.email }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Details and Actions -->
+      <div class="col-lg-8">
+        <!-- Equipo -->
+        <div class="card details-card mb-3">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-laptop"></i>
+              Información del Equipo
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label>Tipo de Equipo:</label>
+                  <p>{{ ticket.tipoEquipo }}</p>
+                </div>
+              </div>
+              <div class="col-md-6" *ngIf="ticket.marca">
+                <div class="detail-item">
+                  <label>Marca:</label>
+                  <p>{{ ticket.marca }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6" *ngIf="ticket.modelo">
+                <div class="detail-item">
+                  <label>Modelo:</label>
+                  <p>{{ ticket.modelo }}</p>
+                </div>
+              </div>
+              <div class="col-md-6" *ngIf="ticket.numeroSerie">
+                <div class="detail-item">
+                  <label>Número de Serie:</label>
+                  <p>{{ ticket.numeroSerie }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row" *ngIf="ticket.accesorios">
+              <div class="col-12">
+                <div class="detail-item">
+                  <label>Accesorios:</label>
+                  <p>{{ ticket.accesorios }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Problema Reportado -->
+        <div class="card details-card mb-3">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-exclamation-triangle"></i>
+              Problema Reportado
+            </h5>
+          </div>
+          <div class="card-body">
+            <p>{{ ticket.problemaReportado }}</p>
+          </div>
+        </div>
+
+        <!-- Diagnóstico -->
+        <div class="card details-card mb-3" *ngIf="ticket.diagnostico">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-stethoscope"></i>
+              Diagnóstico
+            </h5>
+          </div>
+          <div class="card-body">
+            <p>{{ ticket.diagnostico }}</p>
+            <div class="row mt-3" *ngIf="ticket.costoEstimado">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label>Costo Estimado:</label>
+                  <p class="text-success fw-bold">${{ ticket.costoEstimado }}</p>
+                </div>
+              </div>
+              <div class="col-md-6" *ngIf="ticket.tiempoEstimado">
+                <div class="detail-item">
+                  <label>Tiempo Estimado:</label>
+                  <p>{{ ticket.tiempoEstimado }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="card details-card mb-3" *ngIf="ticket.observaciones">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-comment"></i>
+              Observaciones
+            </h5>
+          </div>
+          <div class="card-body">
+            <p>{{ ticket.observaciones }}</p>
+          </div>
+        </div>
+
+        <!-- Workflow Actions -->
+        <div class="card actions-card" *ngIf="!showActionForm">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-tasks"></i>
+              Acciones Disponibles
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <button class="btn btn-info" *ngIf="canAsignarTecnico()" (click)="asignarTecnico()">
+                <i class="fas fa-user-plus"></i>
+                Asignar Técnico
+              </button>
+              <button class="btn btn-primary" *ngIf="canRegistrarDiagnostico()" (click)="registrarDiagnostico()">
+                <i class="fas fa-stethoscope"></i>
+                Registrar Diagnóstico
+              </button>
+              <button class="btn btn-success" *ngIf="canAprobarRechazar()" (click)="aprobarPresupuesto()">
+                <i class="fas fa-check"></i>
+                Aprobar Presupuesto
+              </button>
+              <button class="btn btn-danger" *ngIf="canAprobarRechazar()" (click)="rechazarPresupuesto()">
+                <i class="fas fa-times"></i>
+                Rechazar Presupuesto
+              </button>
+              <button class="btn btn-primary" *ngIf="canIniciarReparacion()" (click)="iniciarReparacion()">
+                <i class="fas fa-wrench"></i>
+                Iniciar Reparación
+              </button>
+              <button class="btn btn-info" *ngIf="canRegistrarPruebas()" (click)="registrarPruebas()">
+                <i class="fas fa-vial"></i>
+                Registrar Pruebas
+              </button>
+              <button class="btn btn-success" *ngIf="canMarcarListo()" (click)="marcarListoEntrega()">
+                <i class="fas fa-flag-checkered"></i>
+                Marcar Listo para Entrega
+              </button>
+              <button class="btn btn-dark" *ngIf="canRegistrarEntrega()" (click)="registrarEntrega()">
+                <i class="fas fa-handshake"></i>
+                Registrar Entrega
+              </button>
+              <button class="btn btn-outline-danger" *ngIf="canCancelar()" (click)="cancelarTicket()">
+                <i class="fas fa-ban"></i>
+                Cancelar Ticket
+              </button>
+              <div class="text-center text-muted" *ngIf="!canAsignarTecnico() && !canRegistrarDiagnostico() && !canAprobarRechazar() && !canIniciarReparacion() && !canRegistrarPruebas() && !canMarcarListo() && !canRegistrarEntrega() && !canCancelar()">
+                <i class="fas fa-info-circle"></i>
+                No hay acciones disponibles en este estado
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Form -->
+        <div class="card action-form-card" *ngIf="showActionForm">
+          <div class="card-header">
+            <h5>
+              <i class="fas fa-edit"></i>
+              {{ currentAction === 'asignarTecnico' ? 'Asignar Técnico' :
+                 currentAction === 'diagnostico' ? 'Registrar Diagnóstico' :
+                 currentAction === 'rechazarPresupuesto' ? 'Rechazar Presupuesto' :
+                 currentAction === 'iniciarReparacion' ? 'Iniciar Reparación' :
+                 currentAction === 'registrarPruebas' ? 'Registrar Pruebas' :
+                 currentAction === 'registrarEntrega' ? 'Registrar Entrega' :
+                 currentAction === 'cancelar' ? 'Cancelar Ticket' : 'Acción' }}
+            </h5>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="actionForm" (ngSubmit)="submitAction()">
+              <!-- Diagnostico -->
+              <div *ngIf="currentAction === 'diagnostico'">
+                <div class="mb-3">
+                  <label class="form-label">Diagnóstico *</label>
+                  <textarea class="form-control" formControlName="diagnostico" rows="4" required></textarea>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Costo Estimado ($) *</label>
+                      <input type="number" class="form-control" formControlName="costoEstimado" step="0.01" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Tiempo Estimado</label>
+                      <input type="text" class="form-control" formControlName="tiempoEstimado" placeholder="Ej: 2-3 días">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rechazar Presupuesto -->
+              <div *ngIf="currentAction === 'rechazarPresupuesto'">
+                <div class="mb-3">
+                  <label class="form-label">Motivo del Rechazo *</label>
+                  <textarea class="form-control" formControlName="motivoRechazo" rows="3" required></textarea>
+                </div>
+              </div>
+
+              <!-- Registrar Pruebas -->
+              <div *ngIf="currentAction === 'registrarPruebas'">
+                <div class="mb-3">
+                  <label class="form-label">Resultado de las Pruebas *</label>
+                  <textarea class="form-control" formControlName="resultadoPruebas" rows="4" required></textarea>
+                </div>
+              </div>
+
+              <!-- Registrar Entrega -->
+              <div *ngIf="currentAction === 'registrarEntrega'">
+                <div class="mb-3">
+                  <label class="form-label">Nombre de Quien Recibe *</label>
+                  <input type="text" class="form-control" formControlName="nombreQuienRecibe" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Parentesco</label>
+                  <input type="text" class="form-control" formControlName="parentescoRecibe">
+                </div>
+              </div>
+
+              <!-- Cancelar -->
+              <div *ngIf="currentAction === 'cancelar'">
+                <div class="mb-3">
+                  <label class="form-label">Motivo de Cancelación *</label>
+                  <textarea class="form-control" formControlName="motivoCancelacion" rows="3" required></textarea>
+                </div>
+              </div>
+
+              <!-- Iniciar Reparacion (sin campos adicionales) -->
+              <div *ngIf="currentAction === 'iniciarReparacion'">
+                <p class="text-muted">¿Confirmar inicio de reparación?</p>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" (click)="closeActionForm()">
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

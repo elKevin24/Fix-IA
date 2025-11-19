@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto Disponible</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #FF9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #FF9800;
+            margin: 0;
+            font-size: 24px;
+        }
+        .ticket-number {
+            background-color: #FF9800;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .diagnostico-box {
+            background-color: #fff3e0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .presupuesto-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+        .presupuesto-table th,
+        .presupuesto-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .presupuesto-table th {
+            background-color: #FF9800;
+            color: white;
+            font-weight: bold;
+        }
+        .presupuesto-table .total {
+            background-color: #FFE0B2;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #FF9800;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #F57C00;
+        }
+        .alert {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #777;
+        }
+        .tiempo-estimado {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${appName}">TESIG</h1>
+            <p style="color: #666; margin: 5px 0;">Presupuesto Disponible</p>
+        </div>
+
+        <p>Estimado/a <span th:text="${nombreCliente}">Cliente</span>,</p>
+
+        <p>Hemos completado el diagnóstico de su equipo. A continuación los detalles:</p>
+
+        <div class="ticket-number">
+            Ticket: <span th:text="${numeroTicket}">TKT-20251105-0001</span>
+        </div>
+
+        <div class="diagnostico-box">
+            <h3 style="margin-top: 0; color: #FF9800;">🔍 Diagnóstico</h3>
+            <p th:text="${diagnostico}" style="margin: 10px 0;">
+                La pantalla LCD está completamente rota y necesita ser reemplazada.
+                El resto de componentes están en buen estado.
+            </p>
+        </div>
+
+        <h3 style="color: #FF9800;">💰 Presupuesto</h3>
+        <table class="presupuesto-table">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th style="text-align: right;">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Mano de Obra</td>
+                    <td style="text-align: right;" th:text="${presupuestoManoObra}">$150.00</td>
+                </tr>
+                <tr>
+                    <td>Piezas y Repuestos</td>
+                    <td style="text-align: right;" th:text="${presupuestoPiezas}">$350.00</td>
+                </tr>
+                <tr class="total">
+                    <td>TOTAL</td>
+                    <td style="text-align: right;" th:text="${presupuestoTotal}">$500.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tiempo-estimado">
+            <strong>⏱️ Tiempo Estimado:</strong> <span th:text="${tiempoEstimado}">5 días</span>
+        </div>
+
+        <div class="alert">
+            <strong>⚠️ ACCIÓN REQUERIDA:</strong><br>
+            Por favor, póngase en contacto con nosotros para <strong>APROBAR</strong> o <strong>RECHAZAR</strong> este presupuesto.
+            <br><br>
+            Puede llamarnos o acudir directamente al taller con su número de ticket.
+        </div>
+
+        <div style="text-align: center;">
+            <a th:href="${urlConsulta}" class="button">
+                📋 Ver Presupuesto Completo
+            </a>
+        </div>
+
+        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h4 style="margin-top: 0;">📞 ¿Cómo aprobar el presupuesto?</h4>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Llame al taller y proporcione su número de ticket</li>
+                <li>O acuda personalmente al taller</li>
+                <li>Confirme si desea proceder con la reparación</li>
+            </ol>
+            <p style="margin: 10px 0; font-size: 14px; color: #666;">
+                <strong>Nota:</strong> Una vez aprobado, procederemos inmediatamente con la reparación.
+            </p>
+        </div>
+
+        <p>Quedamos a la espera de su respuesta.</p>
+
+        <p>Saludos cordiales,<br>
+        <strong th:text="${appName}">TESIG</strong></p>
+
+        <div class="footer">
+            <p>Equipo: <span th:text="${tipoEquipo}">Laptop</span></p>
+            <p>Este es un email automático. Por favor no responda a este mensaje.</p>
+        </div>
+    </div>
+</body>
+</html>

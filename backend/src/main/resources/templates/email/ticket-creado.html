@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Creado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #4CAF50;
+            margin: 0;
+            font-size: 24px;
+        }
+        .ticket-number {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .info-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-row {
+            margin: 10px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+        .value {
+            color: #333;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #777;
+        }
+        .important {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${appName}">TESIG</h1>
+            <p style="color: #666; margin: 5px 0;">Taller Electrónico</p>
+        </div>
+
+        <p>Estimado/a <span th:text="${nombreCliente}">Cliente</span>,</p>
+
+        <p>Hemos recibido su equipo en nuestro taller. A continuación los detalles:</p>
+
+        <div class="ticket-number">
+            <div style="font-size: 14px; margin-bottom: 5px;">Número de Ticket</div>
+            <div th:text="${numeroTicket}">TKT-20251105-0001</div>
+        </div>
+
+        <div class="important">
+            <strong>⚠️ IMPORTANTE:</strong> Guarde este número de ticket. Lo necesitará para consultar el estado de su reparación y para recoger su equipo.
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0; color: #4CAF50;">Información del Equipo</h3>
+            <div class="info-row">
+                <span class="label">Tipo:</span>
+                <span class="value" th:text="${tipoEquipo}">Laptop</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Marca:</span>
+                <span class="value" th:text="${marca}">Dell</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Modelo:</span>
+                <span class="value" th:text="${modelo}">Inspiron 15</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Fecha de Ingreso:</span>
+                <span class="value" th:text="${fechaIngreso}">05/11/2024 14:30</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Falla Reportada:</span>
+                <span class="value" th:text="${fallaReportada}">No enciende</span>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a th:href="${urlConsulta}" class="button">
+                🔍 Consultar Estado del Ticket
+            </a>
+        </div>
+
+        <div class="info-box" style="background-color: #e3f2fd; border-left-color: #2196F3;">
+            <h3 style="margin-top: 0; color: #2196F3;">¿Qué sigue?</h3>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Asignaremos un técnico especializado</li>
+                <li>Realizaremos el diagnóstico del equipo</li>
+                <li>Le enviaremos el presupuesto por email</li>
+                <li>Puede consultar el estado en cualquier momento con su número de ticket</li>
+            </ol>
+        </div>
+
+        <p>Le mantendremos informado sobre el progreso de la reparación.</p>
+
+        <p>Gracias por confiar en nosotros.</p>
+
+        <div class="footer">
+            <p><strong th:text="${appName}">TESIG</strong></p>
+            <p>Este es un email automático. Por favor no responda a este mensaje.</p>
+            <p>Si tiene alguna pregunta, consulte el estado de su ticket en línea.</p>
+        </div>
+    </div>
+</body>
+</html>

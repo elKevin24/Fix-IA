@@ -1,0 +1,97 @@
+spring:
+  application:
+    name: tesig-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tesig_db
+    username: tesig_user
+    password: tesig_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+      platform: postgresql
+
+  # Email Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    # Email del taller (remitente)
+    from: ${MAIL_FROM:taller@tesig.com}
+    from-name: ${MAIL_FROM_NAME:Taller TESIG}
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# JWT Configuration
+jwt:
+  # IMPORTANTE: Cambiar esta clave en producción. Esta es una clave base64 de 256 bits.
+  # Para generar una nueva: openssl rand -base64 32
+  secret: ${JWT_SECRET:dGVzaWctc2VjdXJlLWtleS1mb3ItZGV2ZWxvcG1lbnQtb25seS1kb25vdC11c2UtaW4tcHJvZHVjdGlvbg==}
+  expiration: 86400000 # 24 hours in milliseconds
+  refresh-expiration: 604800000 # 7 days in milliseconds
+
+# Springdoc OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# Configuración personalizada de la aplicación
+tesig:
+  app:
+    name: TESIG - Taller Electrónico
+    public-url: ${PUBLIC_URL:http://localhost:3000}
+    ticket-consultation-path: /consulta
+  notifications:
+    email:
+      enabled: ${NOTIFICATIONS_EMAIL_ENABLED:true}
+    sms:
+      enabled: ${NOTIFICATIONS_SMS_ENABLED:false}
+
+# Logging
+logging:
+  level:
+    com.tesig: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

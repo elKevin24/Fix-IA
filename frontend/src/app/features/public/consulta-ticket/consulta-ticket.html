@@ -1,0 +1,253 @@
+<div class="consulta-container">
+  <div class="consulta-header">
+    <div class="container">
+      <h1><i class="fas fa-tools"></i> TESIG</h1>
+      <p>Consulta el Estado de tu Reparación</p>
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    <!-- Formulario de búsqueda -->
+    <div class="card search-card">
+      <div class="card-body">
+        <form [formGroup]="consultaForm" (ngSubmit)="onConsultar()">
+          <div class="row align-items-end">
+            <div class="col-md-8">
+              <label for="numeroTicket" class="form-label">
+                <i class="fas fa-ticket-alt me-2"></i>
+                Número de Ticket
+              </label>
+              <input
+                type="text"
+                id="numeroTicket"
+                class="form-control form-control-lg"
+                formControlName="numeroTicket"
+                placeholder="Ej: TKT-20250118-0001"
+                [class.is-invalid]="consultaForm.get('numeroTicket')?.invalid && consultaForm.get('numeroTicket')?.touched"
+              />
+              @if (consultaForm.get('numeroTicket')?.invalid && consultaForm.get('numeroTicket')?.touched) {
+                <div class="invalid-feedback">
+                  El formato debe ser: TKT-YYYYMMDD-NNNN
+                </div>
+              }
+              <small class="form-text text-muted">
+                Ingresa el número de ticket que recibiste al dejar tu equipo
+              </small>
+            </div>
+            <div class="col-md-4">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg w-100"
+                [disabled]="isLoading || consultaForm.invalid"
+              >
+                @if (isLoading) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                <i class="fas fa-search me-2"></i>
+                {{ isLoading ? 'Buscando...' : 'Consultar' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mensaje de error -->
+    @if (errorMessage) {
+      <div class="alert alert-danger mt-3" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- Resultado de la consulta -->
+    @if (ticket) {
+      <div class="ticket-result mt-4">
+        <!-- Encabezado del ticket -->
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="mb-0">
+                  <i class="fas fa-file-alt me-2"></i>
+                  {{ ticket.numeroTicket }}
+                </h4>
+              </div>
+              <div>
+                <span [class]="getEstadoBadgeClass(ticket.estado)">
+                  {{ ticket.estado }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <!-- Información del Cliente -->
+              <div class="col-md-6">
+                <h5><i class="fas fa-user me-2"></i>Cliente</h5>
+                <p class="mb-1"><strong>{{ ticket.cliente.nombreCompleto }}</strong></p>
+                <p class="mb-1 text-muted">
+                  <i class="fas fa-envelope me-1"></i> {{ ticket.cliente.email }}
+                </p>
+                <p class="mb-0 text-muted">
+                  <i class="fas fa-phone me-1"></i> {{ ticket.cliente.telefono }}
+                </p>
+              </div>
+
+              <!-- Información del Equipo -->
+              <div class="col-md-6">
+                <h5><i class="fas fa-laptop me-2"></i>Equipo</h5>
+                <p class="mb-1">
+                  <strong>{{ ticket.tipoEquipo }}</strong> - {{ ticket.marca }}
+                  @if (ticket.modelo) {
+                    {{ ticket.modelo }}
+                  }
+                </p>
+                @if (ticket.numeroSerie) {
+                  <p class="mb-1 text-muted">
+                    <i class="fas fa-hashtag me-1"></i>
+                    S/N: {{ ticket.numeroSerie }}
+                  </p>
+                }
+                @if (ticket.accesorios) {
+                  <p class="mb-0 text-muted">
+                    <i class="fas fa-box me-1"></i>
+                    Accesorios: {{ ticket.accesorios }}
+                  </p>
+                }
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Falla Reportada -->
+            <div class="mb-3">
+              <h5><i class="fas fa-exclamation-circle me-2"></i>Falla Reportada</h5>
+              <p>{{ ticket.fallaReportada }}</p>
+            </div>
+
+            <!-- Diagnóstico (si existe) -->
+            @if (ticket.diagnostico) {
+              <div class="mb-3">
+                <h5><i class="fas fa-stethoscope me-2"></i>Diagnóstico</h5>
+                <p>{{ ticket.diagnostico }}</p>
+              </div>
+            }
+
+            <!-- Presupuesto (si existe) -->
+            @if (ticket.presupuestoTotal) {
+              <div class="presupuesto-section">
+                <h5><i class="fas fa-dollar-sign me-2"></i>Presupuesto</h5>
+                <table class="table table-sm">
+                  <tbody>
+                    @if (ticket.presupuestoManoObra) {
+                      <tr>
+                        <td>Mano de Obra:</td>
+                        <td class="text-end">${{ ticket.presupuestoManoObra.toFixed(2) }}</td>
+                      </tr>
+                    }
+                    @if (ticket.presupuestoPiezas) {
+                      <tr>
+                        <td>Piezas y Repuestos:</td>
+                        <td class="text-end">${{ ticket.presupuestoPiezas.toFixed(2) }}</td>
+                      </tr>
+                    }
+                    <tr class="table-active fw-bold">
+                      <td>TOTAL:</td>
+                      <td class="text-end">${{ ticket.presupuestoTotal.toFixed(2) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                @if (ticket.tiempoEstimadoDias) {
+                  <p class="mb-0 text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    Tiempo estimado: {{ ticket.tiempoEstimadoDias }} días
+                  </p>
+                }
+              </div>
+            }
+
+            <!-- Información de entrega -->
+            @if (ticket.estado === EstadoTicket.LISTO_ENTREGA || ticket.estado === EstadoTicket.ENTREGADO) {
+              <div class="alert alert-success mt-3">
+                <i class="fas fa-check-circle me-2"></i>
+                @if (ticket.estado === EstadoTicket.LISTO_ENTREGA) {
+                  <strong>¡Tu equipo está listo para entrega!</strong>
+                  <p class="mb-0 mt-2">Puedes pasar a recogerlo en nuestro horario de atención.</p>
+                } @else {
+                  <strong>Equipo entregado</strong>
+                  @if (ticket.fechaEntrega) {
+                    <p class="mb-0">Fecha de entrega: {{ ticket.fechaEntrega | date:'dd/MM/yyyy HH:mm' }}</p>
+                  }
+                }
+              </div>
+            }
+
+            <!-- Información adicional según estado -->
+            @if (ticket.estado === EstadoTicket.PRESUPUESTADO) {
+              <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Presupuesto disponible</strong>
+                <p class="mb-0 mt-2">
+                  Por favor, contacta con el taller para aprobar o rechazar el presupuesto.
+                </p>
+              </div>
+            }
+
+            <!-- Fechas -->
+            <div class="mt-3 text-muted">
+              <small>
+                <i class="fas fa-calendar me-1"></i>
+                Ingresado: {{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                @if (ticket.updatedAt !== ticket.createdAt) {
+                  <span class="ms-3">
+                    <i class="fas fa-sync me-1"></i>
+                    Última actualización: {{ ticket.updatedAt | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                }
+              </small>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-outline-secondary" (click)="limpiar()">
+                <i class="fas fa-search me-2"></i>
+                Nueva Consulta
+              </button>
+              <button class="btn btn-primary" (click)="descargarPDF()">
+                <i class="fas fa-download me-2"></i>
+                Descargar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Información de contacto -->
+    <div class="card mt-4 info-card">
+      <div class="card-body text-center">
+        <h5>¿Necesitas ayuda?</h5>
+        <p class="text-muted mb-0">
+          Si tienes alguna duda sobre tu reparación, no dudes en contactarnos.
+        </p>
+        <div class="mt-3">
+          <a href="tel:+123456789" class="btn btn-outline-primary me-2">
+            <i class="fas fa-phone me-1"></i> Llamar
+          </a>
+          <a href="mailto:info@tesig.com" class="btn btn-outline-primary">
+            <i class="fas fa-envelope me-1"></i> Email
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Link al login -->
+    <div class="text-center mt-4 mb-4">
+      <p class="text-muted">
+        ¿Eres empleado del taller?
+        <a routerLink="/login" class="text-primary">Inicia sesión aquí</a>
+      </p>
+    </div>
+  </div>
+</div>

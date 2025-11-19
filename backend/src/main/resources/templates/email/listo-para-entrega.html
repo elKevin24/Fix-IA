@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipo Listo para Entrega</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #4CAF50;
+            margin: 0;
+            font-size: 24px;
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 80px;
+            margin: 20px 0;
+        }
+        .ticket-number {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .info-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .total-box {
+            background-color: #fff3e0;
+            border: 2px solid #FF9800;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .total-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF9800;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .horario-box {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #777;
+        }
+        .important {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${appName}">TESIG</h1>
+            <p style="color: #666; margin: 5px 0;">Taller Electrónico</p>
+        </div>
+
+        <div class="success-icon">
+            ✅
+        </div>
+
+        <h2 style="text-align: center; color: #4CAF50; margin: 20px 0;">
+            ¡Su Equipo Está Listo!
+        </h2>
+
+        <p style="text-align: center; font-size: 16px;">
+            Estimado/a <span th:text="${nombreCliente}">Cliente</span>,
+        </p>
+
+        <p style="text-align: center; font-size: 16px;">
+            Nos complace informarle que su <strong th:text="${tipoEquipo}">equipo</strong>
+            <strong th:text="${marca}">marca</strong> ha sido reparado exitosamente y está listo para ser recogido.
+        </p>
+
+        <div class="ticket-number">
+            Ticket: <span th:text="${numeroTicket}">TKT-20251105-0001</span>
+        </div>
+
+        <div class="important">
+            📌 TRAIGA ESTE NÚMERO DE TICKET para recoger su equipo
+        </div>
+
+        <div class="total-box">
+            <div style="font-size: 16px; color: #666;">Monto a Pagar</div>
+            <div class="total-amount" th:text="${presupuestoTotal}">$500.00</div>
+            <div style="font-size: 14px; color: #666; margin-top: 10px;">
+                (Incluye mano de obra y piezas)
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a th:href="${urlConsulta}" class="button">
+                📋 Ver Detalles del Ticket
+            </a>
+        </div>
+
+        <div class="horario-box">
+            <h3 style="margin-top: 0; color: #4CAF50;">🕐 Horario de Atención</h3>
+            <table style="width: 100%;">
+                <tr>
+                    <td><strong>Lunes a Viernes:</strong></td>
+                    <td>9:00 AM - 6:00 PM</td>
+                </tr>
+                <tr>
+                    <td><strong>Sábados:</strong></td>
+                    <td>9:00 AM - 2:00 PM</td>
+                </tr>
+                <tr>
+                    <td><strong>Domingos:</strong></td>
+                    <td>Cerrado</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0; color: #4CAF50;">✓ Trabajo Realizado</h3>
+            <p style="margin: 10px 0;">
+                Su equipo ha sido reparado, probado exhaustivamente y está funcionando correctamente.
+            </p>
+            <p style="margin: 10px 0;">
+                <strong>Garantía:</strong> 30 días sobre el trabajo realizado.
+            </p>
+        </div>
+
+        <div class="info-box" style="background-color: #e3f2fd; border-left-color: #2196F3;">
+            <h3 style="margin-top: 0; color: #2196F3;">📦 Al Recoger su Equipo</h3>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Presente su número de ticket: <strong th:text="${numeroTicket}">TKT-001</strong></li>
+                <li>Verifique que el equipo funcione correctamente</li>
+                <li>Realice el pago (efectivo, tarjeta, transferencia)</li>
+                <li>Solicite su factura si la necesita</li>
+            </ol>
+        </div>
+
+        <p style="text-align: center; font-size: 16px; margin: 30px 0;">
+            <strong>¡Esperamos verle pronto!</strong>
+        </p>
+
+        <p>Gracias por confiar en nosotros.</p>
+
+        <p>Saludos cordiales,<br>
+        <strong>El equipo de <span th:text="${appName}">TESIG</span></strong></p>
+
+        <div class="footer">
+            <p><strong th:text="${appName}">TESIG</strong> - Taller Electrónico</p>
+            <p>Este es un email automático. Por favor no responda a este mensaje.</p>
+            <p style="margin-top: 10px; color: #999;">
+                💡 Recuerde: Tenemos garantía de 30 días sobre todas nuestras reparaciones
+            </p>
+        </div>
+    </div>
+</body>
+</html>
